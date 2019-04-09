@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import './Missile.scss';
-import {BOARD_HEIGHT, BOARD_WIDTH, MISSILE_MOVE_STEP, MISSILE_MOVE_TICK} from "../../constants";
+import {BOARD_HEIGHT, BOARD_WIDTH, GAME_FRAMERATE, MISSILE_MOVE_STEP} from "../../constants";
 
 const DIRECTION_MAP = {
     0: '-top',
@@ -19,11 +19,11 @@ class Missile extends Component {
     }
 
     componentDidMount() {
-        this.timerId = setInterval(() => this.tick(), MISSILE_MOVE_TICK);
+        this.loopId = setInterval(() => this.tick(), GAME_FRAMERATE);
     }
 
     componentWillUnmount() {
-        clearInterval(this.timerId);
+        clearInterval(this.loopId);
     }
 
     tick() {

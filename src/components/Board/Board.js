@@ -9,6 +9,9 @@ class Board extends Component {
         super(props);
 
         this.state = {
+            tanks: [
+                {id: 1}
+            ],
             missiles: []
         };
         this.handleFireMissile = this.handleFireMissile.bind(this);
@@ -16,9 +19,11 @@ class Board extends Component {
     }
 
     handleFireMissile(missile) {
-        this.setState({
-            missiles: this.state.missiles.concat(missile)
-        })
+        if (this.state.missiles.filter((m) => m.tankId === missile.tankId).length === 0) {
+            this.setState({
+                missiles: this.state.missiles.concat(missile)
+            })
+        }
     }
 
     handleFellMissile(id) {
@@ -33,7 +38,15 @@ class Board extends Component {
                 className="board"
                 style={{width: BOARD_WIDTH, height: BOARD_HEIGHT}}
             >
-                <Tank handleFireMissile={this.handleFireMissile}/>
+                {
+                    this.state.tanks.map((tank) => (
+                        <Tank
+                            key={tank.id}
+                            id={tank.id}
+                            handleFireMissile={this.handleFireMissile}
+                        />
+                    ))
+                }
                 {
                     this.state.missiles.map((missile) => (
                         <Missile

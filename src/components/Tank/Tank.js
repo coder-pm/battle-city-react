@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import './Tank.scss';
-import {BOARD_HEIGHT, BOARD_WIDTH, TANK_HEIGHT, TANK_MOVE_STEP, TANK_WIDTH} from "../../constants";
+import {BOARD_HEIGHT, BOARD_WIDTH, GAME_FRAMERATE, TANK_HEIGHT, TANK_MOVE_STEP, TANK_WIDTH} from "../../constants";
 
 const AVAILABLE_KEYBOARD_CODES = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'];
 
@@ -9,21 +9,32 @@ class Tank extends Component {
         super(props);
 
         this.state = {
-            position: {
-                x: 0,
-                y: 0,
-                r: 0
-            }
+            x: 0,
+            y: 0,
+            r: 0
         };
+        this.activeKey = null;
         this.handleKeyboard = this.handleKeyboard.bind(this);
     }
 
-    handleKeyboard(e) {
-        if (AVAILABLE_KEYBOARD_CODES.indexOf(e.code) > -1) {
-            let x = this.state.position.x;
-            let y = this.state.position.y;
-            let r = this.state.position.r;
-            switch (e.code) {
+    componentDidMount() {
+        window.addEventListener('keydown', this.handleKeyboard);
+        window.addEventListener('keyup', this.handleKeyboard);
+        this.loopId = setInterval(() => this.tick(), GAME_FRAMERATE);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('keydown', this.handleKeyboard);
+        window.removeEventListener('keyup', this.handleKeyboard);
+        clearInterval(this.loopId);
+    }
+
+    tick() {
+        if (this.activeKey) {
+            let x = this.state.x;
+            let y = this.state.y;
+            let r = this.state.r;
+            switch (this.activeKey) {
                 case 'ArrowUp':
                     y -= TANK_MOVE_STEP;
                     r = 0;
@@ -40,31 +51,33 @@ class Tank extends Component {
                     x -= TANK_MOVE_STEP;
                     r = 270;
                     break;
-                case 'Space':
-                    this.props.handleFireMissile({
-                        id: new Date().getTime(),
-                        initialX: x,
-                        initialY: y,
-                        direction: r
-                    });
-                    break;
             }
             this.setState({
-                position: {
-                    x: Math.min(BOARD_WIDTH - TANK_WIDTH, Math.max(0, x)),
-                    y: Math.min(BOARD_HEIGHT - TANK_HEIGHT, Math.max(0, y)),
-                    r: r
-                }
+                x: Math.min(BOARD_WIDTH - TANK_WIDTH, Math.max(0, x)),
+                y: Math.min(BOARD_HEIGHT - TANK_HEIGHT, Math.max(0, y)),
+                r: r
             })
         }
     }
 
-    componentDidMount() {
-        window.addEventListener('keydown', this.handleKeyboard)
-    }
-
-    componentWillUnmount() {
-        window.removeEventListener('keydown', this.handleKeyboard)
+    handleKeyboard(e) {
+        if (AVAILABLE_KEYBOARD_CODES.indexOf(e.code) > -1) {
+            if (e.code === 'Space') {
+                this.props.handleFireMissile({
+                    id: new Date().getTime(),
+                    tankId: this.props.id,
+                    initialX: this.state.x,
+                    initialY: this.state.y,
+                    direction: this.state.r
+                });
+            } else {
+                if (e.type === 'keydown') {
+                    this.activeKey = e.code;
+                } else if (this.activeKey === e.code) {
+                    this.activeKey = null;
+                }
+            }
+        }
     }
 
     render() {
@@ -72,9 +85,9 @@ class Tank extends Component {
             <div
                 className="tank"
                 style={{
-                    transform: `rotate(${this.state.position.r}deg)`,
-                    top: `${this.state.position.y}px`,
-                    left: `${this.state.position.x}px`,
+                    transform: `rotate(${this.state.r}deg)`,
+                    top: `${this.state.y}px`,
+                    left: `${this.state.x}px`,
                     width: TANK_WIDTH,
                     height: TANK_HEIGHT
                 }}
