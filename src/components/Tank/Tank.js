@@ -63,6 +63,10 @@ class Tank extends Component {
                     r: r
                 });
                 World.updateObject(this.props.id, this.state.x, this.state.y);
+            } else {
+                this.setState({
+                    r: r
+                });
             }
         }
     }

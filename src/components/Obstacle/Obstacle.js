@@ -1,14 +1,11 @@
 import React, {Component} from 'react';
 import './Obstacle.scss';
 import World from "../../logic/World";
+import {OBSTACLE_HEIGHT, OBSTACLE_WIDTH} from "../../constants";
 
 class Obstacle extends Component {
-    constructor(props) {
-        super(props);
-    }
-
     componentDidMount() {
-        World.registerObject(this.props.id, this.props.x, this.props.y, 20, 20);
+        World.registerObject(this.props.id, this.props.x, this.props.y, OBSTACLE_WIDTH, OBSTACLE_HEIGHT);
     }
 
     componentWillUnmount() {
@@ -21,7 +18,9 @@ class Obstacle extends Component {
                 className="obstacle"
                 style={{
                     left: this.props.x,
-                    top: this.props.y
+                    top: this.props.y,
+                    width: OBSTACLE_WIDTH,
+                    height: OBSTACLE_HEIGHT
                 }}
             />
         );

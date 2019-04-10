@@ -1,6 +1,14 @@
 import React, {Component} from 'react';
 import './Missile.scss';
-import {BOARD_HEIGHT, BOARD_WIDTH, GAME_FRAMERATE, MISSILE_MOVE_STEP} from "../../constants";
+import {
+    BOARD_HEIGHT,
+    BOARD_WIDTH,
+    GAME_FRAMERATE,
+    MISSILE_HEIGHT,
+    MISSILE_MOVE_STEP,
+    MISSILE_WIDTH,
+    TANK_WIDTH
+} from "../../constants";
 import World from "../../logic/World";
 
 const DIRECTION_MAP = {
@@ -15,9 +23,15 @@ class Missile extends Component {
         super(props);
 
         const direction = DIRECTION_MAP[this.props.r].substr(0, 1);
-        this.step = `${parseInt(direction + 1)}` * MISSILE_MOVE_STEP;
+        const operator = `${parseInt(direction + 1)}`;
+        this.step = operator * MISSILE_MOVE_STEP;
         this.axis = DIRECTION_MAP[this.props.r].substr(1);
-        const nextCoordinates = this.calculateNextCoordinates(2, this.props.x + 18, this.props.y + 18);
+        const positionFix = Math.round(TANK_WIDTH / 2) - Math.round(MISSILE_WIDTH / 2);
+        const nextCoordinates = this.calculateNextCoordinates(
+            Math.round(TANK_WIDTH / 2) * operator,
+            this.props.x + positionFix,
+            this.props.y + positionFix
+        );
         this.state = {
             x: nextCoordinates.x,
             y: nextCoordinates.y
@@ -25,7 +39,7 @@ class Missile extends Component {
     }
 
     componentDidMount() {
-        World.registerObject(this.props.id, this.state.x, this.state.y, 5, 5);
+        World.registerObject(this.props.id, this.state.x, this.state.y, MISSILE_WIDTH, MISSILE_HEIGHT);
         this.loopId = setInterval(() => this.tick(), GAME_FRAMERATE);
     }
 
@@ -36,7 +50,7 @@ class Missile extends Component {
 
     tick() {
         const newCoords = this.calculateNextCoordinates();
-        if (!World.isIntersecting(this.props.id, newCoords.x, newCoords.y, 5, 5)) {
+        if (!World.isIntersecting(this.props.id, newCoords.x, newCoords.y, MISSILE_WIDTH, MISSILE_HEIGHT)) {
             this.setState(newCoords);
             World.updateObject(this.props.id, this.state.x, this.state.y);
             if ([0, BOARD_WIDTH].indexOf(this.state.x) > -1 || [0, BOARD_HEIGHT].indexOf(this.state.y) > -1) {
@@ -47,10 +61,9 @@ class Missile extends Component {
         }
     }
 
-    calculateNextCoordinates(steps = 1, x, y) {
+    calculateNextCoordinates(step = this.step, x, y) {
         x = x || this.state.x;
         y = y || this.state.y;
-        const step = this.step * steps;
         return {
             x: Math.min(BOARD_WIDTH, Math.max(0, this.axis === 'left' ? (x + step) : x)),
             y: Math.min(BOARD_HEIGHT, Math.max(0, this.axis === 'top' ? (y + step) : y))
@@ -61,7 +74,12 @@ class Missile extends Component {
         return (
             <div
                 className="missile"
-                style={{top: this.state.y, left: this.state.x}}
+                style={{
+                    top: this.state.y,
+                    left: this.state.x,
+                    width: MISSILE_WIDTH,
+                    height: MISSILE_HEIGHT
+                }}
             />
         );
     }
