@@ -50,14 +50,15 @@ class Missile extends Component {
 
     tick() {
         const newCoords = this.calculateNextCoordinates();
-        if (!World.isIntersecting(this.props.id, newCoords.x, newCoords.y, MISSILE_WIDTH, MISSILE_HEIGHT)) {
+        const objectId = World.isIntersecting(this.props.id, newCoords.x, newCoords.y, MISSILE_WIDTH, MISSILE_HEIGHT);
+        if (objectId) {
+            this.props.handleFellMissile(this.props.id, objectId);
+        } else {
             this.setState(newCoords);
             World.updateObject(this.props.id, this.state.x, this.state.y);
             if ([0, BOARD_WIDTH].indexOf(this.state.x) > -1 || [0, BOARD_HEIGHT].indexOf(this.state.y) > -1) {
                 this.props.handleFellMissile(this.props.id);
             }
-        } else {
-            this.props.handleFellMissile(this.props.id);
         }
     }
 

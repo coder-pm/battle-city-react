@@ -16,11 +16,12 @@ class Board extends Component {
             ],
             obstacles: [
                 {id: uuidv4(), x: 200, y: 300},
-                {id: uuidv4(), x: 220, y: 300},
-                {id: uuidv4(), x: 240, y: 300},
-                {id: uuidv4(), x: 260, y: 300},
-                {id: uuidv4(), x: 260, y: 320},
-                {id: uuidv4(), x: 260, y: 280}
+                {id: uuidv4(), x: 224, y: 300},
+                {id: uuidv4(), x: 248, y: 300},
+                {id: uuidv4(), x: 272, y: 300},
+                {id: uuidv4(), x: 272, y: 324},
+                {id: uuidv4(), x: 272, y: 276},
+                {id: uuidv4(), x: 296, y: 276}
             ],
             missiles: []
         };
@@ -36,10 +37,14 @@ class Board extends Component {
         }
     }
 
-    handleFellMissile(id) {
-        this.setState({
+    handleFellMissile(id, hitObjectId = null) {
+        const newState = {
             missiles: this.state.missiles.filter((missile) => missile.id !== id)
-        })
+        };
+        if (hitObjectId) {
+            newState.obstacles = this.state.obstacles.filter((obstacle) => obstacle.id !== hitObjectId);
+        }
+        this.setState(newState);
     }
 
     render() {

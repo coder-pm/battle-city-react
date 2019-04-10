@@ -37,11 +37,11 @@ class World {
                     intersecting = false;
                 }
                 if (intersecting) {
-                    return intersecting;
+                    return oid;
                 }
             }
         }
-        return false;
+        return null;
     }
 }
 
