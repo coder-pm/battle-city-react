@@ -3,6 +3,8 @@ import './Board.scss';
 import Tank from './../Tank';
 import {BOARD_HEIGHT, BOARD_WIDTH} from "../../constants";
 import Missile from "../Missile";
+import Obstacle from "../Obstacle";
+import uuidv4 from 'uuid/v4';
 
 class Board extends Component {
     constructor(props) {
@@ -10,7 +12,15 @@ class Board extends Component {
 
         this.state = {
             tanks: [
-                {id: 1}
+                {id: uuidv4()}
+            ],
+            obstacles: [
+                {id: uuidv4(), x: 200, y: 300},
+                {id: uuidv4(), x: 220, y: 300},
+                {id: uuidv4(), x: 240, y: 300},
+                {id: uuidv4(), x: 260, y: 300},
+                {id: uuidv4(), x: 260, y: 320},
+                {id: uuidv4(), x: 260, y: 280}
             ],
             missiles: []
         };
@@ -48,13 +58,23 @@ class Board extends Component {
                     ))
                 }
                 {
+                    this.state.obstacles.map((obstacle) => (
+                        <Obstacle
+                            key={obstacle.id}
+                            id={obstacle.id}
+                            x={obstacle.x}
+                            y={obstacle.y}
+                        />
+                    ))
+                }
+                {
                     this.state.missiles.map((missile) => (
                         <Missile
                             key={missile.id}
                             id={missile.id}
-                            initialX={missile.initialX}
-                            initialY={missile.initialY}
-                            direction={missile.direction}
+                            x={missile.x}
+                            y={missile.y}
+                            r={missile.r}
                             handleFellMissile={this.handleFellMissile}
                         />
                     ))

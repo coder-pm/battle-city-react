@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import './Tank.scss';
 import {BOARD_HEIGHT, BOARD_WIDTH, GAME_FRAMERATE, TANK_HEIGHT, TANK_MOVE_STEP, TANK_WIDTH} from "../../constants";
+import uuidv4 from 'uuid/v4';
+import World from "../../logic/World";
 
 const AVAILABLE_KEYBOARD_CODES = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'];
 
@@ -18,12 +20,14 @@ class Tank extends Component {
     }
 
     componentDidMount() {
+        World.registerObject(this.props.id, this.state.x, this.state.y, TANK_WIDTH, TANK_HEIGHT);
         window.addEventListener('keydown', this.handleKeyboard);
         window.addEventListener('keyup', this.handleKeyboard);
         this.loopId = setInterval(() => this.tick(), GAME_FRAMERATE);
     }
 
     componentWillUnmount() {
+        World.removeObject(this.props.id);
         window.removeEventListener('keydown', this.handleKeyboard);
         window.removeEventListener('keyup', this.handleKeyboard);
         clearInterval(this.loopId);
@@ -52,11 +56,14 @@ class Tank extends Component {
                     r = 270;
                     break;
             }
-            this.setState({
-                x: Math.min(BOARD_WIDTH - TANK_WIDTH, Math.max(0, x)),
-                y: Math.min(BOARD_HEIGHT - TANK_HEIGHT, Math.max(0, y)),
-                r: r
-            })
+            if (!World.isIntersecting(this.props.id, x, y, TANK_WIDTH, TANK_HEIGHT)) {
+                this.setState({
+                    x: Math.min(BOARD_WIDTH - TANK_WIDTH, Math.max(0, x)),
+                    y: Math.min(BOARD_HEIGHT - TANK_HEIGHT, Math.max(0, y)),
+                    r: r
+                });
+                World.updateObject(this.props.id, this.state.x, this.state.y);
+            }
         }
     }
 
@@ -64,11 +71,11 @@ class Tank extends Component {
         if (AVAILABLE_KEYBOARD_CODES.indexOf(e.code) > -1) {
             if (e.code === 'Space') {
                 this.props.handleFireMissile({
-                    id: new Date().getTime(),
+                    id: uuidv4(),
                     tankId: this.props.id,
-                    initialX: this.state.x,
-                    initialY: this.state.y,
-                    direction: this.state.r
+                    x: this.state.x,
+                    y: this.state.y,
+                    r: this.state.r
                 });
             } else {
                 if (e.type === 'keydown') {

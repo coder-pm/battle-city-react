@@ -1,15 +1,15 @@
 import React, {Component} from 'react';
-import './App.scss';
+import './Game.scss';
 import Board from "../Board/Board";
 
-class App extends Component {
+class Game extends Component {
     render() {
         return (
-            <div className="tanks-app">
+            <div className="game">
                 <Board/>
             </div>
         );
     }
 }
 
-export default App;
+export default Game;
