@@ -1,6 +1,6 @@
 export const GAME_FRAMERATE = parseInt(1000 / 60);
-export const BOARD_WIDTH = 1600;
-export const BOARD_HEIGHT = 900;
+export const BOARD_WIDTH = 1080;
+export const BOARD_HEIGHT = 720;
 export const TANK_WIDTH = 48;
 export const TANK_HEIGHT = 48;
 export const TANK_MOVE_STEP = 3;

@@ -1,19 +1,13 @@
 import React, {Component} from 'react';
 import './Board.scss';
 import Tank from './../Tank';
-import {
-    BOARD_HEIGHT,
-    BOARD_WIDTH,
-    OBSTACLE_TYPE_BRICK,
-    OBSTACLE_TYPE_FOREST,
-    OBSTACLE_TYPE_METAL,
-    OBSTACLE_TYPE_WATER
-} from "../../constants";
+import {BOARD_HEIGHT, BOARD_WIDTH, OBSTACLE_TYPE_METAL} from "../../constants";
 import Missile from "../Missile";
 import Obstacle from "../Obstacle";
 import uuidv4 from 'uuid/v4';
 import Sound from "react-sound";
 import shotSound from "../../assets/shot.wav";
+import {MAP_1} from "../../maps/Map1";
 
 class Board extends Component {
     constructor(props) {
@@ -23,15 +17,7 @@ class Board extends Component {
             tanks: [
                 {id: uuidv4()}
             ],
-            obstacles: [
-                {id: uuidv4(), type: OBSTACLE_TYPE_BRICK, x: 200, y: 300},
-                {id: uuidv4(), type: OBSTACLE_TYPE_BRICK, x: 224, y: 300},
-                {id: uuidv4(), type: OBSTACLE_TYPE_BRICK, x: 248, y: 300},
-                {id: uuidv4(), type: OBSTACLE_TYPE_METAL, x: 272, y: 300},
-                {id: uuidv4(), type: OBSTACLE_TYPE_METAL, x: 272, y: 324},
-                {id: uuidv4(), type: OBSTACLE_TYPE_FOREST, x: 272, y: 276},
-                {id: uuidv4(), type: OBSTACLE_TYPE_WATER, x: 296, y: 276}
-            ],
+            obstacles: MAP_1,
             missiles: [],
             sounds: []
         };
