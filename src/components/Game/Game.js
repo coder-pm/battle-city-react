@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import './Game.scss';
 import Board from "../Board/Board";
-import introSound from '../../assets/intro.mp3';
+import introSound from '../../assets/intro.wav';
 import Sound from 'react-sound'
 
 class Game extends Component {

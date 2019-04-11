@@ -1,8 +1,18 @@
 import React, {Component} from 'react';
 import './Tank.scss';
-import {BOARD_HEIGHT, BOARD_WIDTH, GAME_FRAMERATE, TANK_HEIGHT, TANK_MOVE_STEP, TANK_WIDTH} from "../../constants";
-import uuidv4 from 'uuid/v4';
+import {
+    BOARD_HEIGHT,
+    BOARD_WIDTH,
+    COLLISION_BLOCK_ALL,
+    COLLISION_BLOCK_MOVE,
+    GAME_FRAMERATE,
+    MISSILE_THROTTLE_TIME,
+    TANK_HEIGHT,
+    TANK_MOVE_STEP,
+    TANK_WIDTH
+} from "../../constants";
 import World from "../../logic/World";
+import uuidv4 from 'uuid/v4';
 
 const AVAILABLE_KEYBOARD_CODES = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'];
 
@@ -16,11 +26,12 @@ class Tank extends Component {
             r: 0
         };
         this.activeKey = null;
+        this.lastMissile = new Date().getTime();
         this.handleKeyboard = this.handleKeyboard.bind(this);
     }
 
     componentDidMount() {
-        World.registerObject(this.props.id, this.state.x, this.state.y, TANK_WIDTH, TANK_HEIGHT);
+        World.registerObject(this.props.id, COLLISION_BLOCK_ALL, this.state.x, this.state.y, TANK_WIDTH, TANK_HEIGHT);
         window.addEventListener('keydown', this.handleKeyboard);
         window.addEventListener('keyup', this.handleKeyboard);
         this.loopId = setInterval(() => this.tick(), GAME_FRAMERATE);
@@ -56,7 +67,7 @@ class Tank extends Component {
                     r = 270;
                     break;
             }
-            if (!World.isIntersecting(this.props.id, x, y, TANK_WIDTH, TANK_HEIGHT)) {
+            if (!World.isIntersecting(this.props.id, COLLISION_BLOCK_MOVE, x, y, TANK_WIDTH, TANK_HEIGHT)) {
                 this.setState({
                     x: Math.min(BOARD_WIDTH - TANK_WIDTH, Math.max(0, x)),
                     y: Math.min(BOARD_HEIGHT - TANK_HEIGHT, Math.max(0, y)),
@@ -73,14 +84,17 @@ class Tank extends Component {
 
     handleKeyboard(e) {
         if (AVAILABLE_KEYBOARD_CODES.indexOf(e.code) > -1) {
-            if (e.code === 'Space') {
-                this.props.handleFireMissile({
-                    id: uuidv4(),
-                    tankId: this.props.id,
-                    x: this.state.x,
-                    y: this.state.y,
-                    r: this.state.r
-                });
+            if (e.code === 'Space' && e.type === 'keydown') {
+                if (this.lastMissile < new Date().getTime()) {
+                    this.lastMissile = new Date().getTime() + MISSILE_THROTTLE_TIME;
+                    this.props.handleFireMissile({
+                        id: uuidv4(),
+                        tankId: this.props.id,
+                        x: this.state.x,
+                        y: this.state.y,
+                        r: this.state.r
+                    });
+                }
             } else {
                 if (e.type === 'keydown') {
                     this.activeKey = e.code;

@@ -1,10 +1,19 @@
 import React, {Component} from 'react';
 import './Board.scss';
 import Tank from './../Tank';
-import {BOARD_HEIGHT, BOARD_WIDTH} from "../../constants";
+import {
+    BOARD_HEIGHT,
+    BOARD_WIDTH,
+    OBSTACLE_TYPE_BRICK,
+    OBSTACLE_TYPE_FOREST,
+    OBSTACLE_TYPE_METAL,
+    OBSTACLE_TYPE_WATER
+} from "../../constants";
 import Missile from "../Missile";
 import Obstacle from "../Obstacle";
 import uuidv4 from 'uuid/v4';
+import Sound from "react-sound";
+import shotSound from "../../assets/shot.wav";
 
 class Board extends Component {
     constructor(props) {
@@ -15,15 +24,16 @@ class Board extends Component {
                 {id: uuidv4()}
             ],
             obstacles: [
-                {id: uuidv4(), type: 'brick', x: 200, y: 300},
-                {id: uuidv4(), type: 'brick', x: 224, y: 300},
-                {id: uuidv4(), type: 'brick', x: 248, y: 300},
-                {id: uuidv4(), type: 'metal', x: 272, y: 300},
-                {id: uuidv4(), type: 'metal', x: 272, y: 324},
-                {id: uuidv4(), type: 'forest', x: 272, y: 276},
-                {id: uuidv4(), type: 'water', x: 296, y: 276}
+                {id: uuidv4(), type: OBSTACLE_TYPE_BRICK, x: 200, y: 300},
+                {id: uuidv4(), type: OBSTACLE_TYPE_BRICK, x: 224, y: 300},
+                {id: uuidv4(), type: OBSTACLE_TYPE_BRICK, x: 248, y: 300},
+                {id: uuidv4(), type: OBSTACLE_TYPE_METAL, x: 272, y: 300},
+                {id: uuidv4(), type: OBSTACLE_TYPE_METAL, x: 272, y: 324},
+                {id: uuidv4(), type: OBSTACLE_TYPE_FOREST, x: 272, y: 276},
+                {id: uuidv4(), type: OBSTACLE_TYPE_WATER, x: 296, y: 276}
             ],
-            missiles: []
+            missiles: [],
+            sounds: []
         };
         this.handleFireMissile = this.handleFireMissile.bind(this);
         this.handleFellMissile = this.handleFellMissile.bind(this);
@@ -32,8 +42,12 @@ class Board extends Component {
     handleFireMissile(missile) {
         if (this.state.missiles.filter((m) => m.tankId === missile.tankId).length === 0) {
             this.setState({
-                missiles: this.state.missiles.concat(missile)
-            })
+                missiles: this.state.missiles.concat(missile),
+                sounds: this.state.sounds.concat({id: missile.id})
+            });
+            setTimeout(() => this.setState({
+                sounds: this.state.sounds.filter((sound) => sound.id !== missile.id)
+            }), 500);
         }
     }
 
@@ -43,7 +57,7 @@ class Board extends Component {
         };
         if (hitObjectId) {
             newState.obstacles = this.state.obstacles.filter(
-                (obstacle) => !(obstacle.id === hitObjectId && obstacle.type !== 'metal')
+                (obstacle) => !(obstacle.id === hitObjectId && obstacle.type !== OBSTACLE_TYPE_METAL)
             );
         }
         this.setState(newState);
@@ -84,6 +98,15 @@ class Board extends Component {
                             y={missile.y}
                             r={missile.r}
                             handleFellMissile={this.handleFellMissile}
+                        />
+                    ))
+                }
+                {
+                    this.state.sounds.map((sound) => (
+                        <Sound
+                            key={sound.id}
+                            url={shotSound}
+                            playStatus={Sound.status.PLAYING}
                         />
                     ))
                 }

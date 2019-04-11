@@ -3,6 +3,8 @@ import './Missile.scss';
 import {
     BOARD_HEIGHT,
     BOARD_WIDTH,
+    COLLISION_BLOCK_ALL,
+    COLLISION_BLOCK_SHOT,
     GAME_FRAMERATE,
     MISSILE_HEIGHT,
     MISSILE_MOVE_STEP,
@@ -39,7 +41,14 @@ class Missile extends Component {
     }
 
     componentDidMount() {
-        World.registerObject(this.props.id, this.state.x, this.state.y, MISSILE_WIDTH, MISSILE_HEIGHT);
+        World.registerObject(
+            this.props.id,
+            COLLISION_BLOCK_ALL,
+            this.state.x,
+            this.state.y,
+            MISSILE_WIDTH,
+            MISSILE_HEIGHT
+        );
         this.loopId = setInterval(() => this.tick(), GAME_FRAMERATE);
     }
 
@@ -50,7 +59,14 @@ class Missile extends Component {
 
     tick() {
         const newCoords = this.calculateNextCoordinates();
-        const objectId = World.isIntersecting(this.props.id, newCoords.x, newCoords.y, MISSILE_WIDTH, MISSILE_HEIGHT);
+        const objectId = World.isIntersecting(
+            this.props.id,
+            COLLISION_BLOCK_SHOT,
+            newCoords.x,
+            newCoords.y,
+            MISSILE_WIDTH,
+            MISSILE_HEIGHT
+        );
         if (objectId) {
             this.props.handleFellMissile(this.props.id, objectId);
         } else {

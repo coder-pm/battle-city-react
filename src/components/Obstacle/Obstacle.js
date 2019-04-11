@@ -1,19 +1,40 @@
 import React, {Component} from 'react';
 import './Obstacle.scss';
 import World from "../../logic/World";
-import {OBSTACLE_HEIGHT, OBSTACLE_WIDTH} from "../../constants";
+import {
+    COLLISION_BLOCK_ALL,
+    COLLISION_BLOCK_MOVE,
+    OBSTACLE_HEIGHT,
+    OBSTACLE_TYPE_FOREST,
+    OBSTACLE_TYPE_WATER,
+    OBSTACLE_WIDTH
+} from '../../constants';
 
 class Obstacle extends Component {
     componentDidMount() {
-        if (['brick', 'metal'].indexOf(this.props.type) > -1) {
-            World.registerObject(this.props.id, this.props.x, this.props.y, OBSTACLE_WIDTH, OBSTACLE_HEIGHT);
+        let collision;
+        switch (this.props.type) {
+            case OBSTACLE_TYPE_WATER:
+                collision = COLLISION_BLOCK_MOVE;
+                break;
+            case OBSTACLE_TYPE_FOREST:
+                collision = null;
+                break;
+            default:
+                collision = COLLISION_BLOCK_ALL
         }
+        World.registerObject(
+            this.props.id,
+            collision,
+            this.props.x,
+            this.props.y,
+            OBSTACLE_WIDTH,
+            OBSTACLE_HEIGHT
+        );
     }
 
     componentWillUnmount() {
-        if (['brick', 'metal'].indexOf(this.props.type) > -1) {
-            World.removeObject(this.props.id);
-        }
+        World.removeObject(this.props.id);
     }
 
     render() {
