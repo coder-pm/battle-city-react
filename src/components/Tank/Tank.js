@@ -8,6 +8,7 @@ import {
     GAME_FRAMERATE,
     MISSILE_THROTTLE_TIME,
     TANK_HEIGHT,
+    TANK_MOVE_CORRECTION_RANGE,
     TANK_MOVE_STEP,
     TANK_WIDTH
 } from "../../constants";
@@ -46,9 +47,11 @@ class Tank extends Component {
 
     tick() {
         if (this.activeKey) {
+            const moveCorrection = [];
             let x = this.state.x;
             let y = this.state.y;
             let r = this.state.r;
+            let correctionAxis = 'x';
             switch (this.activeKey) {
                 case 'ArrowUp':
                     y -= TANK_MOVE_STEP;
@@ -57,6 +60,7 @@ class Tank extends Component {
                 case 'ArrowRight':
                     x += TANK_MOVE_STEP;
                     r = 90;
+                    correctionAxis = 'y';
                     break;
                 case 'ArrowDown':
                     y += TANK_MOVE_STEP;
@@ -65,20 +69,46 @@ class Tank extends Component {
                 case 'ArrowLeft':
                     x -= TANK_MOVE_STEP;
                     r = 270;
+                    correctionAxis = 'y';
                     break;
                 default:
             }
-            if (World.isIntersecting(this.props.id, COLLISION_BLOCK_MOVE, x, y, TANK_WIDTH, TANK_HEIGHT).length === 0) {
-                this.setState({
-                    x: Math.min(BOARD_WIDTH - TANK_WIDTH, Math.max(0, x)),
-                    y: Math.min(BOARD_HEIGHT - TANK_HEIGHT, Math.max(0, y)),
-                    r: r
-                });
-                World.updateObject(this.props.id, this.state.x, this.state.y);
-            } else {
-                this.setState({
-                    r: r
-                });
+
+            for (let c = 0; c < TANK_MOVE_CORRECTION_RANGE; c++) {
+                if (correctionAxis === 'x') {
+                    moveCorrection.push(
+                        {x: x + c, y: y},
+                        {x: x - c, y: y},
+                    );
+                } else {
+                    moveCorrection.push(
+                        {x: x, y: y + c},
+                        {x: x, y: y - c},
+                    );
+                }
+            }
+            moveCorrection.unshift({x: x, y: y});
+            for (let i = 0; i < moveCorrection.length; i++) {
+                if (World.isIntersecting(
+                    this.props.id,
+                    COLLISION_BLOCK_MOVE,
+                    moveCorrection[i].x,
+                    moveCorrection[i].y,
+                    TANK_WIDTH,
+                    TANK_HEIGHT).length === 0
+                ) {
+                    this.setState({
+                        x: Math.min(BOARD_WIDTH - TANK_WIDTH, Math.max(0, moveCorrection[i].x)),
+                        y: Math.min(BOARD_HEIGHT - TANK_HEIGHT, Math.max(0, moveCorrection[i].y)),
+                        r: r
+                    });
+                    World.updateObject(this.props.id, this.state.x, this.state.y);
+                    break;
+                } else {
+                    this.setState({
+                        r: r
+                    });
+                }
             }
         }
     }
