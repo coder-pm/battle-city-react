@@ -66,8 +66,9 @@ class Tank extends Component {
                     x -= TANK_MOVE_STEP;
                     r = 270;
                     break;
+                default:
             }
-            if (!World.isIntersecting(this.props.id, COLLISION_BLOCK_MOVE, x, y, TANK_WIDTH, TANK_HEIGHT)) {
+            if (World.isIntersecting(this.props.id, COLLISION_BLOCK_MOVE, x, y, TANK_WIDTH, TANK_HEIGHT).length === 0) {
                 this.setState({
                     x: Math.min(BOARD_WIDTH - TANK_WIDTH, Math.max(0, x)),
                     y: Math.min(BOARD_HEIGHT - TANK_HEIGHT, Math.max(0, y)),

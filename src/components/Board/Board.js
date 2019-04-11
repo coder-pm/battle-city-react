@@ -37,13 +37,13 @@ class Board extends Component {
         }
     }
 
-    handleFellMissile(id, hitObjectId = null) {
+    handleFellMissile(id, hitObjectIds = null) {
         const newState = {
             missiles: this.state.missiles.filter((missile) => missile.id !== id)
         };
-        if (hitObjectId) {
+        if (hitObjectIds) {
             newState.obstacles = this.state.obstacles.filter(
-                (obstacle) => !(obstacle.id === hitObjectId && obstacle.type !== OBSTACLE_TYPE_METAL)
+                (obstacle) => !(hitObjectIds.indexOf(obstacle.id) > -1 && obstacle.type !== OBSTACLE_TYPE_METAL)
             );
         }
         this.setState(newState);

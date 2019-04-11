@@ -59,7 +59,7 @@ class Missile extends Component {
 
     tick() {
         const newCoords = this.calculateNextCoordinates();
-        const objectId = World.isIntersecting(
+        const objectIds = World.isIntersecting(
             this.props.id,
             COLLISION_BLOCK_SHOT,
             newCoords.x,
@@ -67,8 +67,8 @@ class Missile extends Component {
             MISSILE_WIDTH,
             MISSILE_HEIGHT
         );
-        if (objectId) {
-            this.props.handleFellMissile(this.props.id, objectId);
+        if (objectIds.length > 0) {
+            this.props.handleFellMissile(this.props.id, objectIds);
         } else {
             this.setState(newCoords);
             World.updateObject(this.props.id, this.state.x, this.state.y);

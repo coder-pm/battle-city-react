@@ -27,6 +27,7 @@ class World {
             l: {x: x, y: BOARD_HEIGHT - y}, // top left
             r: {x: x + w, y: BOARD_HEIGHT - y - h} // bottom right
         };
+        const hits = [];
         for (const oid in OBJECTS) {
             if (id !== oid && OBJECTS.hasOwnProperty(oid)) {
                 const object = OBJECTS[oid];
@@ -45,12 +46,12 @@ class World {
                         intersecting = false;
                     }
                     if (intersecting) {
-                        return oid;
+                        hits.push(oid);
                     }
                 }
             }
         }
-        return null;
+        return hits;
     }
 }
 
