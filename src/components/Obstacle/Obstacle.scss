@@ -1,5 +1,22 @@
 .obstacle {
   position: absolute;
+  z-index: 200;
   display: block;
-  background: url('./../../assets/brick.svg') 0 0 no-repeat;
+
+  &.brick {
+    background: url('./../../assets/brick.svg') 0 0 no-repeat;
+  }
+
+  &.metal {
+    background: url('./../../assets/metal.svg') 0 0 no-repeat;
+  }
+
+  &.forest {
+    background: url('./../../assets/forest.svg') 0 0 no-repeat;
+  }
+
+  &.water {
+    z-index: 50;
+    background: url('./../../assets/water.svg') 0 0 no-repeat;
+  }
 }

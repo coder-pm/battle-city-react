@@ -15,13 +15,13 @@ class Board extends Component {
                 {id: uuidv4()}
             ],
             obstacles: [
-                {id: uuidv4(), x: 200, y: 300},
-                {id: uuidv4(), x: 224, y: 300},
-                {id: uuidv4(), x: 248, y: 300},
-                {id: uuidv4(), x: 272, y: 300},
-                {id: uuidv4(), x: 272, y: 324},
-                {id: uuidv4(), x: 272, y: 276},
-                {id: uuidv4(), x: 296, y: 276}
+                {id: uuidv4(), type: 'brick', x: 200, y: 300},
+                {id: uuidv4(), type: 'brick', x: 224, y: 300},
+                {id: uuidv4(), type: 'brick', x: 248, y: 300},
+                {id: uuidv4(), type: 'metal', x: 272, y: 300},
+                {id: uuidv4(), type: 'metal', x: 272, y: 324},
+                {id: uuidv4(), type: 'forest', x: 272, y: 276},
+                {id: uuidv4(), type: 'water', x: 296, y: 276}
             ],
             missiles: []
         };
@@ -42,7 +42,9 @@ class Board extends Component {
             missiles: this.state.missiles.filter((missile) => missile.id !== id)
         };
         if (hitObjectId) {
-            newState.obstacles = this.state.obstacles.filter((obstacle) => obstacle.id !== hitObjectId);
+            newState.obstacles = this.state.obstacles.filter(
+                (obstacle) => !(obstacle.id === hitObjectId && obstacle.type !== 'metal')
+            );
         }
         this.setState(newState);
     }
@@ -67,6 +69,7 @@ class Board extends Component {
                         <Obstacle
                             key={obstacle.id}
                             id={obstacle.id}
+                            type={obstacle.type}
                             x={obstacle.x}
                             y={obstacle.y}
                         />

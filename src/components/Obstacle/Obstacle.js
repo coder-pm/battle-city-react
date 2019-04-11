@@ -5,17 +5,21 @@ import {OBSTACLE_HEIGHT, OBSTACLE_WIDTH} from "../../constants";
 
 class Obstacle extends Component {
     componentDidMount() {
-        World.registerObject(this.props.id, this.props.x, this.props.y, OBSTACLE_WIDTH, OBSTACLE_HEIGHT);
+        if (['brick', 'metal'].indexOf(this.props.type) > -1) {
+            World.registerObject(this.props.id, this.props.x, this.props.y, OBSTACLE_WIDTH, OBSTACLE_HEIGHT);
+        }
     }
 
     componentWillUnmount() {
-        World.removeObject(this.props.id);
+        if (['brick', 'metal'].indexOf(this.props.type) > -1) {
+            World.removeObject(this.props.id);
+        }
     }
 
     render() {
         return (
             <div
-                className="obstacle"
+                className={`obstacle ${this.props.type}`}
                 style={{
                     left: this.props.x,
                     top: this.props.y,
