@@ -30,7 +30,20 @@ document.querySelectorAll('tr').forEach((row, i) => {
 });
 console.log(`
 import uuidv4 from 'uuid/v4';
-import {OBSTACLE_TYPE_BRICK, OBSTACLE_TYPE_FOREST, OBSTACLE_TYPE_METAL, OBSTACLE_TYPE_WATER} from "../constants";
-export const MAP= [
+import {
+    BOARD_HEIGHT,
+    BOARD_WIDTH,
+    OBSTACLE_TYPE_BRICK,
+    OBSTACLE_TYPE_FOREST,
+    OBSTACLE_TYPE_METAL,
+    OBSTACLE_TYPE_TRANSPARENT,
+    OBSTACLE_TYPE_WATER
+} from "../constants";
+
+export const MAP_1 = [
+    {id: uuidv4(), type: OBSTACLE_TYPE_TRANSPARENT, x: 0, y: 0, w: BOARD_WIDTH, h: 1},
+    {id: uuidv4(), type: OBSTACLE_TYPE_TRANSPARENT, x: 0, y: 0, w: 1, h: BOARD_HEIGHT},
+    {id: uuidv4(), type: OBSTACLE_TYPE_TRANSPARENT, x: 0, y: BOARD_HEIGHT, w: BOARD_WIDTH, h: 1},
+    {id: uuidv4(), type: OBSTACLE_TYPE_TRANSPARENT, x: BOARD_WIDTH, y: 0, w: 1, h: BOARD_HEIGHT},
 ${obstacles.join(",\n")}
 ];`);

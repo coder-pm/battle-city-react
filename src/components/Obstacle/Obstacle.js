@@ -24,12 +24,12 @@ class Obstacle extends Component {
                 collision = COLLISION_BLOCK_ALL
         }
         World.registerObject(
-            this.props.id,
+            {id: this.props.id},
             collision,
             this.props.x,
             this.props.y,
-            OBSTACLE_WIDTH,
-            OBSTACLE_HEIGHT
+            this.props.w ? this.props.w : OBSTACLE_WIDTH,
+            this.props.h ? this.props.h : OBSTACLE_HEIGHT
         );
     }
 
@@ -44,8 +44,8 @@ class Obstacle extends Component {
                 style={{
                     left: this.props.x,
                     top: this.props.y,
-                    width: OBSTACLE_WIDTH,
-                    height: OBSTACLE_HEIGHT
+                    width: this.props.w ? this.props.w : OBSTACLE_WIDTH,
+                    height: this.props.h ? this.props.h : OBSTACLE_HEIGHT
                 }}
             />
         );

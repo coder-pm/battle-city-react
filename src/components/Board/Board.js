@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import './Board.scss';
 import Tank from './../Tank';
-import {BOARD_HEIGHT, BOARD_WIDTH, OBSTACLE_TYPE_METAL} from "../../constants";
+import {BOARD_HEIGHT, BOARD_WIDTH, OBSTACLE_TYPE_METAL, OBSTACLE_TYPE_TRANSPARENT} from "../../constants";
 import Missile from "../Missile";
 import Obstacle from "../Obstacle";
 import uuidv4 from 'uuid/v4';
@@ -15,7 +15,11 @@ class Board extends Component {
 
         this.state = {
             tanks: [
-                {id: uuidv4()}
+                {id: uuidv4(), x: 0, y: 0, r: 90, ai: false},
+                {id: uuidv4(), x: 1038, y: 100, r: 270, ai: true},
+                {id: uuidv4(), x: 1038, y: 200, r: 270, ai: true},
+                {id: uuidv4(), x: 1038, y: 400, r: 270, ai: true},
+                {id: uuidv4(), x: 1038, y: 678, r: 0, ai: true}
             ],
             obstacles: MAP_1,
             missiles: [],
@@ -23,10 +27,11 @@ class Board extends Component {
         };
         this.handleFireMissile = this.handleFireMissile.bind(this);
         this.handleFellMissile = this.handleFellMissile.bind(this);
+        this.spawnTank = this.spawnTank.bind(this);
     }
 
     handleFireMissile(missile) {
-        if (this.state.missiles.filter((m) => m.tankId === missile.tankId).length === 0) {
+        if (this.state.missiles.filter((m) => m.tank.id === missile.tank.id).length === 0) {
             this.setState({
                 missiles: this.state.missiles.concat(missile),
                 sounds: this.state.sounds.concat({id: missile.id})
@@ -37,16 +42,45 @@ class Board extends Component {
         }
     }
 
-    handleFellMissile(id, hitObjectIds = null) {
-        const newState = {
-            missiles: this.state.missiles.filter((missile) => missile.id !== id)
-        };
-        if (hitObjectIds) {
+    handleFellMissile(id, originTank = null, hitObjects = null) {
+        const newState = {};
+        if (hitObjects.length) {
+            newState.missiles = this.state.missiles.filter(
+                (missile) => !(
+                    missile.id === id ||
+                    hitObjects.filter((o) => o.id === missile.id).length > 0
+                )
+            );
             newState.obstacles = this.state.obstacles.filter(
-                (obstacle) => !(hitObjectIds.indexOf(obstacle.id) > -1 && obstacle.type !== OBSTACLE_TYPE_METAL)
+                (obstacle) => !(
+                    hitObjects.filter((o) => o.id === obstacle.id).length > 0 &&
+                    [OBSTACLE_TYPE_METAL, OBSTACLE_TYPE_TRANSPARENT].indexOf(obstacle.type) === -1
+                )
+            );
+            newState.tanks = this.state.tanks.filter(
+                (tank) => {
+                    if (
+                        // this tank wasn't hit
+                        hitObjects.filter((o) => o.id === tank.id).length === 0 ||
+                        // ignore if ai hit ai
+                        tank.ai === originTank.ai ||
+                        // ignore if we hit self
+                        tank.id === originTank.id
+                    ) {
+                        return true;
+                    }
+                    setTimeout(() => this.spawnTank(tank), 2500);
+                    return false;
+                }
             );
         }
         this.setState(newState);
+    }
+
+    spawnTank(tank) {
+        this.setState({
+            tanks: this.state.tanks.concat(tank)
+        });
     }
 
     render() {
@@ -60,6 +94,10 @@ class Board extends Component {
                         <Tank
                             key={tank.id}
                             id={tank.id}
+                            ai={tank.ai}
+                            x={tank.x}
+                            y={tank.y}
+                            r={tank.r}
                             handleFireMissile={this.handleFireMissile}
                         />
                     ))
@@ -72,6 +110,8 @@ class Board extends Component {
                             type={obstacle.type}
                             x={obstacle.x}
                             y={obstacle.y}
+                            w={obstacle.w}
+                            h={obstacle.h}
                         />
                     ))
                 }
@@ -80,6 +120,7 @@ class Board extends Component {
                         <Missile
                             key={missile.id}
                             id={missile.id}
+                            tank={missile.tank}
                             x={missile.x}
                             y={missile.y}
                             r={missile.r}

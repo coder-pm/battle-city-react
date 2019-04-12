@@ -1,5 +1,9 @@
 .tank {
-  position: relative;
+  position: absolute;
   z-index: 100;
   background: url('./../../assets/tank.svg') top left no-repeat;
+
+  &.ai {
+    background: url('./../../assets/tank-ai.svg') top left no-repeat;
+  }
 }

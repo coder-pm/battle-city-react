@@ -1,8 +1,6 @@
 import React, {Component} from 'react';
 import './Tank.scss';
 import {
-    BOARD_HEIGHT,
-    BOARD_WIDTH,
     COLLISION_BLOCK_ALL,
     COLLISION_BLOCK_MOVE,
     GAME_FRAMERATE,
@@ -22,9 +20,9 @@ class Tank extends Component {
         super(props);
 
         this.state = {
-            x: 0,
-            y: 0,
-            r: 0
+            x: this.props.x,
+            y: this.props.y,
+            r: this.props.r
         };
         this.activeKey = null;
         this.lastMissile = new Date().getTime();
@@ -32,20 +30,72 @@ class Tank extends Component {
     }
 
     componentDidMount() {
-        World.registerObject(this.props.id, COLLISION_BLOCK_ALL, this.state.x, this.state.y, TANK_WIDTH, TANK_HEIGHT);
-        window.addEventListener('keydown', this.handleKeyboard);
-        window.addEventListener('keyup', this.handleKeyboard);
+        World.registerObject(
+            {id: this.props.id, ai: this.props.ai},
+            COLLISION_BLOCK_ALL,
+            this.state.x,
+            this.state.y,
+            TANK_WIDTH,
+            TANK_HEIGHT);
         this.loopId = setInterval(() => this.tick(), GAME_FRAMERATE);
+
+        if (!this.props.ai) {
+            window.addEventListener('keydown', this.handleKeyboard);
+            window.addEventListener('keyup', this.handleKeyboard);
+        }
     }
 
     componentWillUnmount() {
         World.removeObject(this.props.id);
-        window.removeEventListener('keydown', this.handleKeyboard);
-        window.removeEventListener('keyup', this.handleKeyboard);
         clearInterval(this.loopId);
+
+        if (!this.props.ai) {
+            window.removeEventListener('keydown', this.handleKeyboard);
+            window.removeEventListener('keyup', this.handleKeyboard);
+        }
+    }
+
+    handleKeyboard(e) {
+        if (AVAILABLE_KEYBOARD_CODES.indexOf(e.code) > -1) {
+            if (e.code === 'Space' && e.type === 'keydown') {
+                this.fireMissile();
+            } else {
+                if (e.type === 'keydown') {
+                    this.activeKey = e.code;
+                } else if (this.activeKey === e.code) {
+                    this.activeKey = null;
+                }
+            }
+        }
+    }
+
+    fireMissile() {
+        if ((this.lastMissile + MISSILE_THROTTLE_TIME) < new Date().getTime()) {
+            this.lastMissile = new Date().getTime();
+            this.props.handleFireMissile({
+                id: uuidv4(),
+                tank: {id: this.props.id, ai: this.props.ai},
+                x: this.state.x,
+                y: this.state.y,
+                r: this.state.r
+            });
+        }
+    }
+
+    ai() {
+        if (!this.activeKey || this.isStuck) {
+            const keys = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft'].filter((key) => key !== this.activeKey);
+            this.activeKey = keys[Math.floor(Math.random() * keys.length)];
+        }
+        if ((this.lastMissile + Math.floor(Math.random() * 3000) + 1500) < new Date().getTime()) {
+            this.fireMissile();
+        }
     }
 
     tick() {
+        if (this.props.ai) {
+            this.ai();
+        }
         if (this.activeKey) {
             const moveCorrection = [];
             let x = this.state.x;
@@ -98,13 +148,15 @@ class Tank extends Component {
                     TANK_HEIGHT).length === 0
                 ) {
                     this.setState({
-                        x: Math.min(BOARD_WIDTH - TANK_WIDTH, Math.max(0, moveCorrection[i].x)),
-                        y: Math.min(BOARD_HEIGHT - TANK_HEIGHT, Math.max(0, moveCorrection[i].y)),
+                        x: moveCorrection[i].x,
+                        y: moveCorrection[i].y,
                         r: r
                     });
                     World.updateObject(this.props.id, this.state.x, this.state.y);
+                    this.isStuck = false;
                     break;
                 } else {
+                    this.isStuck = true;
                     this.setState({
                         r: r
                     });
@@ -113,33 +165,10 @@ class Tank extends Component {
         }
     }
 
-    handleKeyboard(e) {
-        if (AVAILABLE_KEYBOARD_CODES.indexOf(e.code) > -1) {
-            if (e.code === 'Space' && e.type === 'keydown') {
-                if (this.lastMissile < new Date().getTime()) {
-                    this.lastMissile = new Date().getTime() + MISSILE_THROTTLE_TIME;
-                    this.props.handleFireMissile({
-                        id: uuidv4(),
-                        tankId: this.props.id,
-                        x: this.state.x,
-                        y: this.state.y,
-                        r: this.state.r
-                    });
-                }
-            } else {
-                if (e.type === 'keydown') {
-                    this.activeKey = e.code;
-                } else if (this.activeKey === e.code) {
-                    this.activeKey = null;
-                }
-            }
-        }
-    }
-
     render() {
         return (
             <div
-                className="tank"
+                className={`tank${this.props.ai ? ' ai' : ''}`}
                 style={{
                     transform: `rotate(${this.state.r}deg)`,
                     top: `${this.state.y}px`,

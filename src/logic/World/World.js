@@ -8,9 +8,9 @@ const COLLISION_MAP = {
 };
 
 class World {
-    static registerObject(id, collision, x, y, w, h) {
+    static registerObject(object, collision, x, y, w, h) {
         collision = collision === COLLISION_BLOCK_ALL ? [COLLISION_BLOCK_MOVE, COLLISION_BLOCK_SHOT] : [collision];
-        OBJECTS[id] = {collision: collision, x: x, y: y, w: w, h: h};
+        OBJECTS[object.id] = {def: object, collision: collision, x: x, y: y, w: w, h: h};
     }
 
     static updateObject(id, x, y) {
@@ -46,7 +46,7 @@ class World {
                         intersecting = false;
                     }
                     if (intersecting) {
-                        hits.push(oid);
+                        hits.push(object.def);
                     }
                 }
             }

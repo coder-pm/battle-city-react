@@ -42,7 +42,7 @@ class Missile extends Component {
 
     componentDidMount() {
         World.registerObject(
-            this.props.id,
+            {id: this.props.id},
             COLLISION_BLOCK_ALL,
             this.state.x,
             this.state.y,
@@ -68,7 +68,7 @@ class Missile extends Component {
             MISSILE_HEIGHT
         );
         if (objectIds.length > 0) {
-            this.props.handleFellMissile(this.props.id, objectIds);
+            this.props.handleFellMissile(this.props.id, this.props.tank, objectIds);
         } else {
             this.setState(newCoords);
             World.updateObject(this.props.id, this.state.x, this.state.y);
@@ -82,8 +82,8 @@ class Missile extends Component {
         x = x || this.state.x;
         y = y || this.state.y;
         return {
-            x: Math.min(BOARD_WIDTH, Math.max(0, this.axis === 'left' ? (x + step) : x)),
-            y: Math.min(BOARD_HEIGHT, Math.max(0, this.axis === 'top' ? (y + step) : y))
+            x: this.axis === 'left' ? (x + step) : x,
+            y: this.axis === 'top' ? (y + step) : y
         };
     }
 
