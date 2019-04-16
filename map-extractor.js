@@ -22,28 +22,29 @@ document.querySelectorAll('tr').forEach((row, i) => {
                             type = 'OBSTACLE_TYPE_BRICK';
                             break;
                     }
-                    obstacles.push(`{id: uuidv4(), type: ${type}, x: ${j * 24}, y: ${i * 24}}`);
+                    obstacles.push(`{id: uuidv4(), type: ${type}, x: ${24 + (j * 24)}, y: ${24 + (i * 24)}}`);
                 }
             }
         })
     }
 });
-console.log(`
-import uuidv4 from 'uuid/v4';
+console.log(`import uuidv4 from 'uuid/v4';
 import {
     BOARD_HEIGHT,
     BOARD_WIDTH,
+    OBSTACLE_HEIGHT,
     OBSTACLE_TYPE_BRICK,
     OBSTACLE_TYPE_FOREST,
     OBSTACLE_TYPE_METAL,
     OBSTACLE_TYPE_TRANSPARENT,
-    OBSTACLE_TYPE_WATER
+    OBSTACLE_TYPE_WATER,
+    OBSTACLE_WIDTH
 } from "../constants";
 
 export const MAP_1 = [
-    {id: uuidv4(), type: OBSTACLE_TYPE_TRANSPARENT, x: 0, y: 0, w: BOARD_WIDTH, h: 1},
-    {id: uuidv4(), type: OBSTACLE_TYPE_TRANSPARENT, x: 0, y: 0, w: 1, h: BOARD_HEIGHT},
-    {id: uuidv4(), type: OBSTACLE_TYPE_TRANSPARENT, x: 0, y: BOARD_HEIGHT, w: BOARD_WIDTH, h: 1},
-    {id: uuidv4(), type: OBSTACLE_TYPE_TRANSPARENT, x: BOARD_WIDTH, y: 0, w: 1, h: BOARD_HEIGHT},
+    {id: uuidv4(), type: OBSTACLE_TYPE_TRANSPARENT, x: 0, y: 0, w: BOARD_WIDTH, h: OBSTACLE_HEIGHT},
+    {id: uuidv4(), type: OBSTACLE_TYPE_TRANSPARENT, x: 0, y: 0, w: OBSTACLE_WIDTH, h: BOARD_HEIGHT},
+    {id: uuidv4(), type: OBSTACLE_TYPE_TRANSPARENT, x: 0, y: BOARD_HEIGHT - OBSTACLE_HEIGHT, w: BOARD_WIDTH, h: OBSTACLE_HEIGHT},
+    {id: uuidv4(), type: OBSTACLE_TYPE_TRANSPARENT, x: BOARD_WIDTH - OBSTACLE_WIDTH, y: 0, w: OBSTACLE_WIDTH, h: BOARD_HEIGHT},
 ${obstacles.join(",\n")}
 ];`);

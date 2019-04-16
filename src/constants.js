@@ -1,6 +1,6 @@
 export const GAME_FRAMERATE = Math.floor(1000 / 60);
-export const BOARD_WIDTH = 1080;
-export const BOARD_HEIGHT = 720;
+export const BOARD_WIDTH = 1080 + (2 * 24);
+export const BOARD_HEIGHT = 720 + (2 * 24);
 export const TANK_WIDTH = 42;
 export const TANK_HEIGHT = 42;
 export const TANK_MOVE_STEP = Math.floor(GAME_FRAMERATE / 5);

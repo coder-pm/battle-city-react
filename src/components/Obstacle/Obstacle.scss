@@ -19,4 +19,8 @@
     z-index: 50;
     background: url('./../../assets/water.svg') 0 0 no-repeat;
   }
+
+  &.transparent {
+    background: #404040;
+  }
 }

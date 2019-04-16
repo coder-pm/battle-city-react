@@ -15,11 +15,11 @@ class Board extends Component {
 
         this.state = {
             tanks: [
-                {id: uuidv4(), x: 0, y: 0, r: 90, ai: false},
-                {id: uuidv4(), x: 1038, y: 100, r: 270, ai: true},
-                {id: uuidv4(), x: 1038, y: 200, r: 270, ai: true},
-                {id: uuidv4(), x: 1038, y: 400, r: 270, ai: true},
-                {id: uuidv4(), x: 1038, y: 678, r: 0, ai: true}
+                {id: uuidv4(), x: 24, y: 24, r: 90, ai: false},
+                {id: uuidv4(), x: 1062, y: 124, r: 270, ai: true},
+                {id: uuidv4(), x: 1062, y: 224, r: 270, ai: true},
+                {id: uuidv4(), x: 1062, y: 424, r: 270, ai: true},
+                {id: uuidv4(), x: 1062, y: 702, r: 0, ai: true}
             ],
             obstacles: MAP_1,
             missiles: [],
