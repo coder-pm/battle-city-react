@@ -4,7 +4,6 @@ export const BOARD_HEIGHT = 720 + (2 * 24);
 export const TANK_WIDTH = 42;
 export const TANK_HEIGHT = 42;
 export const TANK_MOVE_STEP = Math.floor(GAME_FRAMERATE / 5);
-export const TANK_MOVE_CORRECTION_RANGE = 16;
 export const OBSTACLE_WIDTH = 24;
 export const OBSTACLE_HEIGHT = 24;
 export const OBSTACLE_TYPE_BRICK = 'brick';

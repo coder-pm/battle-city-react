@@ -5,8 +5,9 @@ import {
     COLLISION_BLOCK_MOVE,
     GAME_FRAMERATE,
     MISSILE_THROTTLE_TIME,
+    OBSTACLE_HEIGHT,
+    OBSTACLE_WIDTH,
     TANK_HEIGHT,
-    TANK_MOVE_CORRECTION_RANGE,
     TANK_MOVE_STEP,
     TANK_WIDTH
 } from "../../constants";
@@ -97,10 +98,10 @@ class Tank extends Component {
             this.ai();
         }
         if (this.activeKey) {
-            const moveCorrection = [];
             let x = this.state.x;
             let y = this.state.y;
             let r = this.state.r;
+            let initialDirection = r;
             let correctionAxis = 'x';
             switch (this.activeKey) {
                 case 'ArrowUp':
@@ -123,44 +124,27 @@ class Tank extends Component {
                     break;
                 default:
             }
-
-            for (let c = 0; c < TANK_MOVE_CORRECTION_RANGE; c++) {
+            if (initialDirection !== r) {
                 if (correctionAxis === 'x') {
-                    moveCorrection.push(
-                        {x: x + c, y: y},
-                        {x: x - c, y: y},
-                    );
+                    x = 3 + (Math.round(x / OBSTACLE_WIDTH) * OBSTACLE_WIDTH);
                 } else {
-                    moveCorrection.push(
-                        {x: x, y: y + c},
-                        {x: x, y: y - c},
-                    );
+                    y = 3 + (Math.round(y / OBSTACLE_HEIGHT) * OBSTACLE_HEIGHT);
                 }
             }
-            moveCorrection.unshift({x: x, y: y});
-            for (let i = 0; i < moveCorrection.length; i++) {
-                if (World.isIntersecting(
-                    this.props.id,
-                    COLLISION_BLOCK_MOVE,
-                    moveCorrection[i].x,
-                    moveCorrection[i].y,
-                    TANK_WIDTH,
-                    TANK_HEIGHT).length === 0
-                ) {
-                    this.setState({
-                        x: moveCorrection[i].x,
-                        y: moveCorrection[i].y,
-                        r: r
-                    });
-                    World.updateObject(this.props.id, this.state.x, this.state.y);
-                    this.isStuck = false;
-                    break;
-                } else {
-                    this.isStuck = true;
-                    this.setState({
-                        r: r
-                    });
-                }
+            if (World.isIntersecting(
+                this.props.id,
+                COLLISION_BLOCK_MOVE,
+                x,
+                y,
+                TANK_WIDTH,
+                TANK_HEIGHT).length === 0
+            ) {
+                this.setState({x: x, y: y, r: r});
+                World.updateObject(this.props.id, this.state.x, this.state.y);
+                this.isStuck = false;
+            } else {
+                this.isStuck = true;
+                this.setState({r: r});
             }
         }
     }

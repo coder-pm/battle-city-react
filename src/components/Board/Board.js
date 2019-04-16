@@ -15,7 +15,7 @@ class Board extends Component {
 
         this.state = {
             tanks: [
-                {id: uuidv4(), x: 24, y: 24, r: 90, ai: false},
+                {id: uuidv4(), x: 25, y: 25, r: 90, ai: false},
                 {id: uuidv4(), x: 1062, y: 124, r: 270, ai: true},
                 {id: uuidv4(), x: 1062, y: 224, r: 270, ai: true},
                 {id: uuidv4(), x: 1062, y: 424, r: 270, ai: true},
