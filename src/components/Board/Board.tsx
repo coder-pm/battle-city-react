@@ -1,16 +1,23 @@
-import React, {Component} from 'react';
-import './Board.scss';
+import React, {Component, ReactNode} from 'react';
 import Tank from './../Tank';
 import {BOARD_HEIGHT, BOARD_WIDTH, OBSTACLE_TYPE_METAL, OBSTACLE_TYPE_TRANSPARENT} from "../../constants";
 import Missile from "../Missile";
 import Obstacle from "../Obstacle";
 import uuidv4 from 'uuid/v4';
-import Sound from "react-sound";
-import shotSound from "../../assets/shot.wav";
+import assetSoundShot from "../../assets/audio/shot.wav";
 import {MAP_1} from "../../maps/Map1";
+import './Board.scss';
 
-class Board extends Component {
-    constructor(props) {
+/**
+ * Class Board - board component.
+ */
+export default class Board extends Component<any, any> {
+    /**
+     * Board constructor.
+     *
+     * @param props - properties
+     */
+    public constructor(props: any) {
         super(props);
 
         this.state = {
@@ -30,67 +37,89 @@ class Board extends Component {
         this.spawnTank = this.spawnTank.bind(this);
     }
 
-    handleFireMissile(missile) {
-        if (this.state.missiles.filter((m) => m.tank.id === missile.tank.id).length === 0) {
+    /**
+     * Missile fire handler.
+     *
+     * @param missile - missile definition
+     */
+    protected handleFireMissile(missile: any): void {
+        if (this.state.missiles.filter((m: any) => m.tank.id === missile.tank.id).length === 0) {
             this.setState({
                 missiles: this.state.missiles.concat(missile),
                 sounds: this.state.sounds.concat({id: missile.id})
             });
-            setTimeout(() => this.setState({
-                sounds: this.state.sounds.filter((sound) => sound.id !== missile.id)
+            window.setTimeout(() => this.setState({
+                sounds: this.state.sounds.filter((sound: any) => sound.id !== missile.id)
             }), 500);
         }
     }
 
-    handleFellMissile(id, originTank = null, hitObjects = null) {
-        const newState = {};
-        if (hitObjects.length) {
-            newState.missiles = this.state.missiles.filter(
-                (missile) => !(
-                    missile.id === id ||
-                    hitObjects.filter((o) => o.id === missile.id).length > 0
-                )
-            );
-            newState.obstacles = this.state.obstacles.filter(
-                (obstacle) => !(
-                    hitObjects.filter((o) => o.id === obstacle.id).length > 0 &&
-                    [OBSTACLE_TYPE_METAL, OBSTACLE_TYPE_TRANSPARENT].indexOf(obstacle.type) === -1
-                )
-            );
-            newState.tanks = this.state.tanks.filter(
-                (tank) => {
-                    if (
-                        // this tank wasn't hit
-                        hitObjects.filter((o) => o.id === tank.id).length === 0 ||
-                        // ignore if ai hit ai
-                        tank.ai === originTank.ai ||
-                        // ignore if we hit self
-                        tank.id === originTank.id
-                    ) {
-                        return true;
-                    }
-                    setTimeout(() => this.spawnTank(tank), 2500);
-                    return false;
+    /**
+     * Missile fell handler.
+     *
+     * @param id - missile id
+     * @param originTank - tank that fired a missile
+     * @param hitObjects - objects that were hit by missile
+     */
+    protected handleFellMissile(id: string, originTank: any, hitObjects: any): void {
+        const newState: any = {};
+        // remove hit missiles
+        newState.missiles = this.state.missiles.filter(
+            (missile: any) => !(
+                missile.id === id ||
+                hitObjects.filter((o: any) => o.id === missile.id).length > 0
+            )
+        );
+        // remove hit destructible obstacles
+        newState.obstacles = this.state.obstacles.filter(
+            (obstacle: any) => !(
+                hitObjects.filter((o: any) => o.id === obstacle.id).length > 0 &&
+                [OBSTACLE_TYPE_METAL, OBSTACLE_TYPE_TRANSPARENT].indexOf(obstacle.type) === -1
+            )
+        );
+        // remove hit tanks
+        newState.tanks = this.state.tanks.filter(
+            (tank: any) => {
+                if (
+                    // this tank wasn't hit
+                    hitObjects.filter((o: any) => o.id === tank.id).length === 0 ||
+                    // ignore if ai hit ai
+                    tank.ai === originTank.ai ||
+                    // ignore if we hit self
+                    tank.id === originTank.id
+                ) {
+                    return true;
                 }
-            );
-        }
+                // set respawn tank timer
+                window.setTimeout(() => this.spawnTank(tank), 2500);
+                return false;
+            }
+        );
         this.setState(newState);
     }
 
-    spawnTank(tank) {
+    /**
+     * Spawn tank.
+     *
+     * @param tank - tank definition
+     */
+    protected spawnTank(tank: any): void {
         this.setState({
             tanks: this.state.tanks.concat(tank)
         });
     }
 
-    render() {
+    /**
+     * Render component.
+     */
+    public render(): ReactNode {
         return (
             <div
                 className="board"
                 style={{width: BOARD_WIDTH, height: BOARD_HEIGHT}}
             >
                 {
-                    this.state.tanks.map((tank) => (
+                    this.state.tanks.map((tank: any) => (
                         <Tank
                             key={tank.id}
                             id={tank.id}
@@ -103,7 +132,7 @@ class Board extends Component {
                     ))
                 }
                 {
-                    this.state.obstacles.map((obstacle) => (
+                    this.state.obstacles.map((obstacle: any) => (
                         <Obstacle
                             key={obstacle.id}
                             id={obstacle.id}
@@ -116,7 +145,7 @@ class Board extends Component {
                     ))
                 }
                 {
-                    this.state.missiles.map((missile) => (
+                    this.state.missiles.map((missile: any) => (
                         <Missile
                             key={missile.id}
                             id={missile.id}
@@ -129,17 +158,11 @@ class Board extends Component {
                     ))
                 }
                 {
-                    this.state.sounds.map((sound) => (
-                        <Sound
-                            key={sound.id}
-                            url={shotSound}
-                            playStatus={Sound.status.PLAYING}
-                        />
+                    this.state.sounds.map((sound: any) => (
+                        <audio key={sound.id} src={assetSoundShot} autoPlay/>
                     ))
                 }
             </div>
         );
     }
 }
-
-export default Board;

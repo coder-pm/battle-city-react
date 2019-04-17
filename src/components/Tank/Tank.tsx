@@ -1,8 +1,6 @@
-import React, {Component} from 'react';
+import React, {Component, ReactNode} from 'react';
 import './Tank.scss';
 import {
-    COLLISION_BLOCK_ALL,
-    COLLISION_BLOCK_MOVE,
     GAME_FRAMERATE,
     MISSILE_THROTTLE_TIME,
     OBSTACLE_HEIGHT,
@@ -13,11 +11,28 @@ import {
 } from "../../constants";
 import World from "../../logic/World";
 import uuidv4 from 'uuid/v4';
+import {Collision} from "../../enums/Collision";
 
 const AVAILABLE_KEYBOARD_CODES = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'];
 
-class Tank extends Component {
-    constructor(props) {
+/**
+ * Class Tank - tank component.
+ */
+export default class Tank extends Component<any, any> {
+    /**
+     * Local properties.
+     */
+    protected activeKey: string;
+    protected lastMissile: number;
+    protected isStuck: boolean = false;
+    protected loopId: number = 0;
+
+    /**
+     * Tank constructor.
+     *
+     * @param props - properties
+     */
+    constructor(props: any) {
         super(props);
 
         this.state = {
@@ -25,30 +40,37 @@ class Tank extends Component {
             y: this.props.y,
             r: this.props.r
         };
-        this.activeKey = null;
+        this.activeKey = '';
         this.lastMissile = new Date().getTime();
         this.handleKeyboard = this.handleKeyboard.bind(this);
     }
 
-    componentDidMount() {
+    /**
+     * Method called once after creating component.
+     */
+    public componentDidMount(): void {
         World.registerObject(
             {id: this.props.id, ai: this.props.ai},
-            COLLISION_BLOCK_ALL,
+            Collision.BLOCK_ALL,
             this.state.x,
             this.state.y,
             TANK_WIDTH,
             TANK_HEIGHT);
-        this.loopId = setInterval(() => this.tick(), GAME_FRAMERATE);
+        this.loopId = window.setInterval(() => this.tick(), GAME_FRAMERATE);
 
+        // start "artificial intelligence"
         if (!this.props.ai) {
             window.addEventListener('keydown', this.handleKeyboard);
             window.addEventListener('keyup', this.handleKeyboard);
         }
     }
 
-    componentWillUnmount() {
+    /**
+     * Method called once after component removal.
+     */
+    public componentWillUnmount(): void {
         World.removeObject(this.props.id);
-        clearInterval(this.loopId);
+        window.clearInterval(this.loopId);
 
         if (!this.props.ai) {
             window.removeEventListener('keydown', this.handleKeyboard);
@@ -56,7 +78,12 @@ class Tank extends Component {
         }
     }
 
-    handleKeyboard(e) {
+    /**
+     * Keyboard handler.
+     *
+     * @param e - synthetic event
+     */
+    protected handleKeyboard(e: any): void {
         if (AVAILABLE_KEYBOARD_CODES.indexOf(e.code) > -1) {
             if (e.code === 'Space' && e.type === 'keydown') {
                 this.fireMissile();
@@ -64,13 +91,16 @@ class Tank extends Component {
                 if (e.type === 'keydown') {
                     this.activeKey = e.code;
                 } else if (this.activeKey === e.code) {
-                    this.activeKey = null;
+                    this.activeKey = '';
                 }
             }
         }
     }
 
-    fireMissile() {
+    /**
+     * File missile handler.
+     */
+    protected fireMissile(): void {
         if ((this.lastMissile + MISSILE_THROTTLE_TIME) < new Date().getTime()) {
             this.lastMissile = new Date().getTime();
             this.props.handleFireMissile({
@@ -83,20 +113,37 @@ class Tank extends Component {
         }
     }
 
-    ai() {
+    /**
+     * Artificial intelligence handler.
+     */
+    protected ai(): void {
         if (!this.activeKey || this.isStuck) {
-            const keys = ['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft'].filter((key) => key !== this.activeKey);
+            // randomize keyboard click when tank has no active key or if it stucked
+            const keys = [
+                'ArrowUp',
+                'ArrowRight',
+                'ArrowDown',
+                'ArrowLeft'
+            ].filter((key) => key !== this.activeKey);
             this.activeKey = keys[Math.floor(Math.random() * keys.length)];
         }
+
+        // randomize fire missile action
         if ((this.lastMissile + Math.floor(Math.random() * 3000) + 1500) < new Date().getTime()) {
             this.fireMissile();
         }
     }
 
-    tick() {
+    /**
+     * Game loop tick.
+     */
+    protected tick(): void {
+        // call ai if active
         if (this.props.ai) {
             this.ai();
         }
+
+        // handle active key
         if (this.activeKey) {
             let x = this.state.x;
             let y = this.state.y;
@@ -124,6 +171,8 @@ class Tank extends Component {
                     break;
                 default:
             }
+
+            // move correction (stick to grid)
             if (initialDirection !== r) {
                 if (correctionAxis === 'x') {
                     x = 3 + (Math.round(x / OBSTACLE_WIDTH) * OBSTACLE_WIDTH);
@@ -131,9 +180,11 @@ class Tank extends Component {
                     y = 3 + (Math.round(y / OBSTACLE_HEIGHT) * OBSTACLE_HEIGHT);
                 }
             }
+
+            // intersection check
             if (World.isIntersecting(
                 this.props.id,
-                COLLISION_BLOCK_MOVE,
+                Collision.BLOCK_MOVE,
                 x,
                 y,
                 TANK_WIDTH,
@@ -143,13 +194,17 @@ class Tank extends Component {
                 World.updateObject(this.props.id, this.state.x, this.state.y);
                 this.isStuck = false;
             } else {
+                // just rotate in case of intersection
                 this.isStuck = true;
                 this.setState({r: r});
             }
         }
     }
 
-    render() {
+    /**
+     * Render component.
+     */
+    public render(): ReactNode {
         return (
             <div
                 className={`tank${this.props.ai ? ' ai' : ''}`}
@@ -165,5 +220,3 @@ class Tank extends Component {
         );
     }
 }
-
-export default Tank;

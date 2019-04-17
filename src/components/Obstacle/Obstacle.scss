@@ -4,20 +4,20 @@
   display: block;
 
   &.brick {
-    background: url('./../../assets/brick.svg') 0 0 no-repeat;
+    background: url('./../../assets/img/brick.svg') 0 0 no-repeat;
   }
 
   &.metal {
-    background: url('./../../assets/metal.svg') 0 0 no-repeat;
+    background: url('./../../assets/img/metal.svg') 0 0 no-repeat;
   }
 
   &.forest {
-    background: url('./../../assets/forest.svg') 0 0 no-repeat;
+    background: url('./../../assets/img/forest.svg') 0 0 no-repeat;
   }
 
   &.water {
     z-index: 50;
-    background: url('./../../assets/water.svg') 0 0 no-repeat;
+    background: url('./../../assets/img/water.svg') 0 0 no-repeat;
   }
 
   &.transparent {

@@ -1,27 +1,24 @@
-import React, {Component} from 'react';
-import './Obstacle.scss';
+import React, {Component, ReactNode} from 'react';
 import World from "../../logic/World";
-import {
-    COLLISION_BLOCK_ALL,
-    COLLISION_BLOCK_MOVE,
-    OBSTACLE_HEIGHT,
-    OBSTACLE_TYPE_FOREST,
-    OBSTACLE_TYPE_WATER,
-    OBSTACLE_WIDTH
-} from '../../constants';
+import {OBSTACLE_HEIGHT, OBSTACLE_TYPE_FOREST, OBSTACLE_TYPE_WATER, OBSTACLE_WIDTH} from '../../constants';
+import {Collision} from "../../enums/Collision";
+import './Obstacle.scss';
 
-class Obstacle extends Component {
-    componentDidMount() {
-        let collision;
+export default class Obstacle extends Component<any, any> {
+    /**
+     * Method called once after creating component.
+     */
+    public componentDidMount(): void {
+        let collision: string;
         switch (this.props.type) {
             case OBSTACLE_TYPE_WATER:
-                collision = COLLISION_BLOCK_MOVE;
+                collision = Collision.BLOCK_MOVE;
                 break;
             case OBSTACLE_TYPE_FOREST:
-                collision = null;
+                collision = Collision.BLOCK_NONE;
                 break;
             default:
-                collision = COLLISION_BLOCK_ALL
+                collision = Collision.BLOCK_ALL
         }
         World.registerObject(
             {id: this.props.id},
@@ -33,11 +30,17 @@ class Obstacle extends Component {
         );
     }
 
-    componentWillUnmount() {
+    /**
+     * Method called once after component removal.
+     */
+    public componentWillUnmount(): void {
         World.removeObject(this.props.id);
     }
 
-    render() {
+    /**
+     * Render component.
+     */
+    public render(): ReactNode {
         return (
             <div
                 className={`obstacle ${this.props.type}`}
@@ -51,5 +54,3 @@ class Obstacle extends Component {
         );
     }
 }
-
-export default Obstacle;
