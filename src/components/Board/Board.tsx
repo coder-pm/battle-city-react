@@ -12,6 +12,8 @@ import MissileModel from "../Missile/MissileModel";
 import Stateless from "../../models/Stateless";
 import BoardStateModel from "./BoardStateModel";
 import TankModel from "../Tank/TankModel";
+import World from "../../logic/World";
+import {Collision} from "../../enums/Collision";
 
 /**
  * Class Board - board component.
@@ -36,28 +38,28 @@ export default class Board extends Component<Stateless, BoardStateModel> {
                 },
                 {
                     id: uuidv4(),
-                    location: {x: 1062, y: 124},
+                    location: {x: 1061, y: 124},
                     dimension: {width: TANK_WIDTH, height: TANK_HEIGHT},
                     rotation: 270,
                     ai: true
                 },
                 {
                     id: uuidv4(),
-                    location: {x: 1062, y: 224},
+                    location: {x: 1061, y: 224},
                     dimension: {width: TANK_WIDTH, height: TANK_HEIGHT},
                     rotation: 270,
                     ai: true
                 },
                 {
                     id: uuidv4(),
-                    location: {x: 1062, y: 424},
+                    location: {x: 1061, y: 424},
                     dimension: {width: TANK_WIDTH, height: TANK_HEIGHT},
                     rotation: 270,
                     ai: true
                 },
                 {
                     id: uuidv4(),
-                    location: {x: 1062, y: 702},
+                    location: {x: 1061, y: 702},
                     dimension: {width: TANK_WIDTH, height: TANK_HEIGHT},
                     rotation: 0,
                     ai: true
@@ -140,9 +142,15 @@ export default class Board extends Component<Stateless, BoardStateModel> {
      * @param tank - tank definition
      */
     protected spawnTank(tank: TankModel): void {
-        this.setState({
-            tanks: this.state.tanks.concat(tank)
-        });
+        // check if its possible to spawn tank here
+        if (World.isIntersecting(tank, Collision.BLOCK_MOVE).length === 0) {
+            this.setState({
+                tanks: this.state.tanks.concat(tank)
+            });
+        } else {
+            // defer spawning
+            window.setTimeout(() => this.spawnTank(tank), 1000);
+        }
     }
 
     /**
