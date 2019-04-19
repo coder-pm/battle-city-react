@@ -1,32 +1,67 @@
+import './Board.scss';
 import React, {Component, ReactNode} from 'react';
 import Tank from './../Tank';
-import {BOARD_HEIGHT, BOARD_WIDTH, OBSTACLE_TYPE_METAL, OBSTACLE_TYPE_TRANSPARENT} from "../../constants";
+import {BOARD_HEIGHT, BOARD_WIDTH, TANK_HEIGHT, TANK_WIDTH} from "../../constants";
 import Missile from "../Missile";
 import Obstacle from "../Obstacle";
 import uuidv4 from 'uuid/v4';
 import assetSoundShot from "../../assets/audio/shot.wav";
 import {MAP_1} from "../../maps/Map1";
-import './Board.scss';
+import {ObstacleType} from "../Obstacle/ObstacleType";
+import MissileModel from "../Missile/MissileModel";
+import Stateless from "../../models/Stateless";
+import BoardStateModel from "./BoardStateModel";
+import TankModel from "../Tank/TankModel";
 
 /**
  * Class Board - board component.
  */
-export default class Board extends Component<any, any> {
+export default class Board extends Component<Stateless, BoardStateModel> {
     /**
      * Board constructor.
      *
      * @param props - properties
      */
-    public constructor(props: any) {
+    public constructor(props: Stateless) {
         super(props);
 
         this.state = {
             tanks: [
-                {id: uuidv4(), x: 25, y: 25, r: 90, ai: false},
-                {id: uuidv4(), x: 1062, y: 124, r: 270, ai: true},
-                {id: uuidv4(), x: 1062, y: 224, r: 270, ai: true},
-                {id: uuidv4(), x: 1062, y: 424, r: 270, ai: true},
-                {id: uuidv4(), x: 1062, y: 702, r: 0, ai: true}
+                {
+                    id: uuidv4(),
+                    location: {x: 25, y: 25},
+                    dimension: {width: TANK_WIDTH, height: TANK_HEIGHT},
+                    rotation: 90,
+                    ai: false
+                },
+                {
+                    id: uuidv4(),
+                    location: {x: 1062, y: 124},
+                    dimension: {width: TANK_WIDTH, height: TANK_HEIGHT},
+                    rotation: 270,
+                    ai: true
+                },
+                {
+                    id: uuidv4(),
+                    location: {x: 1062, y: 224},
+                    dimension: {width: TANK_WIDTH, height: TANK_HEIGHT},
+                    rotation: 270,
+                    ai: true
+                },
+                {
+                    id: uuidv4(),
+                    location: {x: 1062, y: 424},
+                    dimension: {width: TANK_WIDTH, height: TANK_HEIGHT},
+                    rotation: 270,
+                    ai: true
+                },
+                {
+                    id: uuidv4(),
+                    location: {x: 1062, y: 702},
+                    dimension: {width: TANK_WIDTH, height: TANK_HEIGHT},
+                    rotation: 0,
+                    ai: true
+                }
             ],
             obstacles: MAP_1,
             missiles: [],
@@ -42,14 +77,14 @@ export default class Board extends Component<any, any> {
      *
      * @param missile - missile definition
      */
-    protected handleFireMissile(missile: any): void {
-        if (this.state.missiles.filter((m: any) => m.tank.id === missile.tank.id).length === 0) {
+    protected handleFireMissile(missile: MissileModel): void {
+        if (this.state.missiles.filter((m) => m.owner.id === missile.owner.id).length === 0) {
             this.setState({
                 missiles: this.state.missiles.concat(missile),
                 sounds: this.state.sounds.concat({id: missile.id})
             });
             window.setTimeout(() => this.setState({
-                sounds: this.state.sounds.filter((sound: any) => sound.id !== missile.id)
+                sounds: this.state.sounds.filter((sound) => sound.id !== missile.id)
             }), 500);
         }
     }
@@ -65,21 +100,22 @@ export default class Board extends Component<any, any> {
         const newState: any = {};
         // remove hit missiles
         newState.missiles = this.state.missiles.filter(
-            (missile: any) => !(
+            (missile) => !(
                 missile.id === id ||
                 hitObjects.filter((o: any) => o.id === missile.id).length > 0
             )
         );
         // remove hit destructible obstacles
         newState.obstacles = this.state.obstacles.filter(
-            (obstacle: any) => !(
+            (obstacle) => !(
                 hitObjects.filter((o: any) => o.id === obstacle.id).length > 0 &&
-                [OBSTACLE_TYPE_METAL, OBSTACLE_TYPE_TRANSPARENT].indexOf(obstacle.type) === -1
+                // it should be not possible to destroy metal and transparent obstacles
+                [ObstacleType.METAL, ObstacleType.TRANSPARENT].indexOf(obstacle.type) === -1
             )
         );
         // remove hit tanks
         newState.tanks = this.state.tanks.filter(
-            (tank: any) => {
+            (tank) => {
                 if (
                     // this tank wasn't hit
                     hitObjects.filter((o: any) => o.id === tank.id).length === 0 ||
@@ -103,7 +139,7 @@ export default class Board extends Component<any, any> {
      *
      * @param tank - tank definition
      */
-    protected spawnTank(tank: any): void {
+    protected spawnTank(tank: TankModel): void {
         this.setState({
             tanks: this.state.tanks.concat(tank)
         });
@@ -119,46 +155,42 @@ export default class Board extends Component<any, any> {
                 style={{width: BOARD_WIDTH, height: BOARD_HEIGHT}}
             >
                 {
-                    this.state.tanks.map((tank: any) => (
+                    this.state.tanks.map((tank) => (
                         <Tank
                             key={tank.id}
                             id={tank.id}
                             ai={tank.ai}
-                            x={tank.x}
-                            y={tank.y}
-                            r={tank.r}
+                            location={tank.location}
+                            rotation={tank.rotation}
                             handleFireMissile={this.handleFireMissile}
                         />
                     ))
                 }
                 {
-                    this.state.obstacles.map((obstacle: any) => (
+                    this.state.obstacles.map((obstacle) => (
                         <Obstacle
                             key={obstacle.id}
                             id={obstacle.id}
                             type={obstacle.type}
-                            x={obstacle.x}
-                            y={obstacle.y}
-                            w={obstacle.w}
-                            h={obstacle.h}
+                            location={obstacle.location}
+                            dimension={obstacle.dimension}
                         />
                     ))
                 }
                 {
-                    this.state.missiles.map((missile: any) => (
+                    this.state.missiles.map((missile) => (
                         <Missile
                             key={missile.id}
                             id={missile.id}
-                            tank={missile.tank}
-                            x={missile.x}
-                            y={missile.y}
-                            r={missile.r}
+                            owner={missile.owner}
+                            location={missile.location}
+                            rotation={missile.rotation}
                             handleFellMissile={this.handleFellMissile}
                         />
                     ))
                 }
                 {
-                    this.state.sounds.map((sound: any) => (
+                    this.state.sounds.map((sound) => (
                         <audio key={sound.id} src={assetSoundShot} autoPlay/>
                     ))
                 }

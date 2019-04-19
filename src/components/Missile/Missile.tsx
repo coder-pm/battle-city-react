@@ -1,13 +1,16 @@
+import './Missile.scss';
 import React, {Component, ReactNode} from 'react';
 import {GAME_FRAMERATE, MISSILE_HEIGHT, MISSILE_MOVE_STEP, MISSILE_WIDTH, TANK_WIDTH} from "../../constants";
 import World from "../../logic/World";
 import {Collision} from "../../enums/Collision";
-import './Missile.scss';
+import MissilePropsModel from "./MissilePropsModel";
+import MissileStateModel from "./MissileStateModel";
+import Point from "../../models/Point";
 
 /**
  * Class Missile - missile component.
  */
-export default class Missile extends Component<any, any> {
+export default class Missile extends Component<MissilePropsModel, MissileStateModel> {
     /**
      * Missile direction map.
      */
@@ -30,22 +33,22 @@ export default class Missile extends Component<any, any> {
      *
      * @param props - properties
      */
-    public constructor(props: any) {
+    public constructor(props: MissilePropsModel) {
         super(props);
 
-        const direction = Missile.DIRECTION_MAP[this.props.r].substr(0, 1);
+        const direction = Missile.DIRECTION_MAP[this.props.rotation].substr(0, 1);
         const operator = parseInt(direction + 1);
         this.step = operator * MISSILE_MOVE_STEP;
-        this.axis = Missile.DIRECTION_MAP[this.props.r].substr(1);
+        this.axis = Missile.DIRECTION_MAP[this.props.rotation].substr(1);
         const positionFix = Math.round(TANK_WIDTH / 2) - Math.round(MISSILE_WIDTH / 2);
-        const nextCoordinates = this.calculateNextCoordinates(
-            Math.round(TANK_WIDTH / 2) * operator,
-            this.props.x + positionFix,
-            this.props.y + positionFix
-        );
         this.state = {
-            x: nextCoordinates.x,
-            y: nextCoordinates.y
+            location: this.calculateNextCoordinates(
+                Math.round(TANK_WIDTH / 2) * operator,
+                {
+                    x: this.props.location.x + positionFix,
+                    y: this.props.location.y + positionFix
+                }
+            )
         };
     }
 
@@ -54,12 +57,18 @@ export default class Missile extends Component<any, any> {
      */
     public componentDidMount(): void {
         World.registerObject(
-            {id: this.props.id},
-            Collision.BLOCK_ALL,
-            this.state.x,
-            this.state.y,
-            MISSILE_WIDTH,
-            MISSILE_HEIGHT
+            {
+                id: this.props.id,
+                location: {
+                    x: this.state.location.x,
+                    y: this.state.location.y
+                },
+                dimension: {
+                    width: MISSILE_WIDTH,
+                    height: MISSILE_HEIGHT
+                }
+            },
+            Collision.BLOCK_ALL
         );
         this.loopId = window.setInterval(() => this.tick(), GAME_FRAMERATE);
     }
@@ -78,21 +87,26 @@ export default class Missile extends Component<any, any> {
     protected tick(): void {
         // calculate new coordinates and check if missile may move there
         const newCoords = this.calculateNextCoordinates();
-        const objectIds = World.isIntersecting(
-            this.props.id,
-            Collision.BLOCK_SHOT,
-            newCoords.x,
-            newCoords.y,
-            MISSILE_WIDTH,
-            MISSILE_HEIGHT
+        const objectIds = World.isIntersecting({
+                id: this.props.id,
+                location: {
+                    x: newCoords.x,
+                    y: newCoords.y
+                },
+                dimension: {
+                    width: MISSILE_WIDTH,
+                    height: MISSILE_HEIGHT
+                }
+            },
+            Collision.BLOCK_SHOT
         );
 
         // handle missile fell if it hits other object or continue moving
         if (objectIds.length > 0) {
-            this.props.handleFellMissile(this.props.id, this.props.tank, objectIds);
+            this.props.handleFellMissile(this.props.id, this.props.owner, objectIds);
         } else {
-            this.setState(newCoords);
-            World.updateObject(this.props.id, this.state.x, this.state.y);
+            this.setState({location: newCoords});
+            World.updateObject(this.props.id, this.state.location);
         }
     }
 
@@ -100,17 +114,12 @@ export default class Missile extends Component<any, any> {
      * Calculate missile next coordinates.
      *
      * @param step - how far missile will move
-     * @param x - position x to move from
-     * @param y - position y to move from
+     * @param location - initial position
      */
-    protected calculateNextCoordinates(
-        step: number = this.step,
-        x: number = this.state.x,
-        y: number = this.state.y
-    ): any {
+    protected calculateNextCoordinates(step: number = this.step, location: Point = this.state.location): Point {
         return {
-            x: this.axis === 'left' ? (x + step) : x,
-            y: this.axis === 'top' ? (y + step) : y
+            x: this.axis === 'left' ? (location.x + step) : location.x,
+            y: this.axis === 'top' ? (location.y + step) : location.y
         };
     }
 
@@ -122,8 +131,8 @@ export default class Missile extends Component<any, any> {
             <div
                 className="missile"
                 style={{
-                    top: this.state.y,
-                    left: this.state.x,
+                    top: this.state.location.y,
+                    left: this.state.location.x,
                     width: MISSILE_WIDTH,
                     height: MISSILE_HEIGHT
                 }}

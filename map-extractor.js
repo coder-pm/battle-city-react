@@ -10,41 +10,33 @@ document.querySelectorAll('tr').forEach((row, i) => {
                     let type = obstacle.getAttribute('title');
                     switch (type) {
                         case 'metal':
-                            type = 'OBSTACLE_TYPE_METAL';
+                            type = 'ObstacleType.METAL';
                             break;
                         case 'forest':
-                            type = 'OBSTACLE_TYPE_FOREST';
+                            type = 'ObstacleType.FOREST';
                             break;
                         case 'water':
-                            type = 'OBSTACLE_TYPE_WATER';
+                            type = 'ObstacleType.WATER';
                             break;
                         default:
-                            type = 'OBSTACLE_TYPE_BRICK';
+                            type = 'ObstacleType.BRICK';
                             break;
                     }
-                    obstacles.push(`{id: uuidv4(), type: ${type}, x: ${24 + (j * 24)}, y: ${24 + (i * 24)}}`);
+                    obstacles.push(`{id: uuidv4(), type: ${type}, location: {x: ${24 + (j * 24)}, y: ${24 + (i * 24)}}, dimension: {width: OBSTACLE_WIDTH, height: OBSTACLE_HEIGHT}}`);
                 }
             }
         })
     }
 });
 console.log(`import uuidv4 from 'uuid/v4';
-import {
-    BOARD_HEIGHT,
-    BOARD_WIDTH,
-    OBSTACLE_HEIGHT,
-    OBSTACLE_TYPE_BRICK,
-    OBSTACLE_TYPE_FOREST,
-    OBSTACLE_TYPE_METAL,
-    OBSTACLE_TYPE_TRANSPARENT,
-    OBSTACLE_TYPE_WATER,
-    OBSTACLE_WIDTH
-} from "../constants";
+import {BOARD_HEIGHT, BOARD_WIDTH, OBSTACLE_HEIGHT, OBSTACLE_WIDTH} from "../constants";
+import {ObstacleType} from "../components/Obstacle/ObstacleType";
+import ObstacleModel from "../components/Obstacle/ObstacleModel";
 
-export const MAP_1 = [
-    {id: uuidv4(), type: OBSTACLE_TYPE_TRANSPARENT, x: 0, y: 0, w: BOARD_WIDTH, h: OBSTACLE_HEIGHT},
-    {id: uuidv4(), type: OBSTACLE_TYPE_TRANSPARENT, x: 0, y: 0, w: OBSTACLE_WIDTH, h: BOARD_HEIGHT},
-    {id: uuidv4(), type: OBSTACLE_TYPE_TRANSPARENT, x: 0, y: BOARD_HEIGHT - OBSTACLE_HEIGHT, w: BOARD_WIDTH, h: OBSTACLE_HEIGHT},
-    {id: uuidv4(), type: OBSTACLE_TYPE_TRANSPARENT, x: BOARD_WIDTH - OBSTACLE_WIDTH, y: 0, w: OBSTACLE_WIDTH, h: BOARD_HEIGHT},
+export const MAP_1: Array<ObstacleModel> = [
+    {id: uuidv4(), type: ObstacleType.TRANSPARENT, location: {x: 0, y: 0}, dimension: {width: BOARD_WIDTH, height: OBSTACLE_HEIGHT}},
+    {id: uuidv4(), type: ObstacleType.TRANSPARENT, location: {x: 0, y: 0}, dimension: {width: OBSTACLE_WIDTH, height: BOARD_HEIGHT}},
+    {id: uuidv4(), type: ObstacleType.TRANSPARENT, location: {x: 0, y: BOARD_HEIGHT - OBSTACLE_HEIGHT}, dimension: {width: BOARD_WIDTH, height: OBSTACLE_HEIGHT}},
+    {id: uuidv4(), type: ObstacleType.TRANSPARENT, location: {x: BOARD_WIDTH - OBSTACLE_WIDTH, y: 0}, dimension: {width: OBSTACLE_WIDTH, height: BOARD_HEIGHT}},
 ${obstacles.join(",\n")}
 ];`);

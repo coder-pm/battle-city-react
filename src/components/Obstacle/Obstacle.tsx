@@ -1,32 +1,44 @@
+import './Obstacle.scss';
 import React, {Component, ReactNode} from 'react';
 import World from "../../logic/World";
-import {OBSTACLE_HEIGHT, OBSTACLE_TYPE_FOREST, OBSTACLE_TYPE_WATER, OBSTACLE_WIDTH} from '../../constants';
+import {OBSTACLE_HEIGHT, OBSTACLE_WIDTH} from '../../constants';
 import {Collision} from "../../enums/Collision";
-import './Obstacle.scss';
+import ObstaclePropsModel from "./ObstaclePropsModel";
+import Stateless from "../../models/Stateless";
+import {ObstacleType} from "./ObstacleType";
 
-export default class Obstacle extends Component<any, any> {
+/**
+ * Class Obstacle - obstacle component.
+ */
+export default class Obstacle extends Component<ObstaclePropsModel, Stateless> {
     /**
      * Method called once after creating component.
      */
     public componentDidMount(): void {
-        let collision: string;
+        let collision: Collision;
         switch (this.props.type) {
-            case OBSTACLE_TYPE_WATER:
+            case ObstacleType.WATER:
                 collision = Collision.BLOCK_MOVE;
                 break;
-            case OBSTACLE_TYPE_FOREST:
+            case ObstacleType.FOREST:
                 collision = Collision.BLOCK_NONE;
                 break;
             default:
                 collision = Collision.BLOCK_ALL
         }
         World.registerObject(
-            {id: this.props.id},
-            collision,
-            this.props.x,
-            this.props.y,
-            this.props.w ? this.props.w : OBSTACLE_WIDTH,
-            this.props.h ? this.props.h : OBSTACLE_HEIGHT
+            {
+                id: this.props.id,
+                location: {
+                    x: this.props.location.x,
+                    y: this.props.location.y
+                },
+                dimension: {
+                    width: this.props.dimension ? this.props.dimension.width : OBSTACLE_WIDTH,
+                    height: this.props.dimension ? this.props.dimension.height : OBSTACLE_HEIGHT
+                }
+            },
+            collision
         );
     }
 
@@ -45,10 +57,10 @@ export default class Obstacle extends Component<any, any> {
             <div
                 className={`obstacle ${this.props.type}`}
                 style={{
-                    left: this.props.x,
-                    top: this.props.y,
-                    width: this.props.w ? this.props.w : OBSTACLE_WIDTH,
-                    height: this.props.h ? this.props.h : OBSTACLE_HEIGHT
+                    left: this.props.location.x,
+                    top: this.props.location.y,
+                    width: this.props.dimension ? this.props.dimension.width : OBSTACLE_WIDTH,
+                    height: this.props.dimension ? this.props.dimension.height : OBSTACLE_HEIGHT
                 }}
             />
         );

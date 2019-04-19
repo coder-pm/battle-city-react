@@ -1,8 +1,10 @@
-import React, {Component, ReactNode} from 'react';
 import './Tank.scss';
+import React, {Component, ReactNode} from 'react';
 import {
     GAME_FRAMERATE,
+    MISSILE_HEIGHT,
     MISSILE_THROTTLE_TIME,
+    MISSILE_WIDTH,
     OBSTACLE_HEIGHT,
     OBSTACLE_WIDTH,
     TANK_HEIGHT,
@@ -12,13 +14,20 @@ import {
 import World from "../../logic/World";
 import uuidv4 from 'uuid/v4';
 import {Collision} from "../../enums/Collision";
-
-const AVAILABLE_KEYBOARD_CODES = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'];
+import TankPropsModel from "./TankPropsModel";
+import TankStateModel from "./TankStateModel";
 
 /**
  * Class Tank - tank component.
  */
-export default class Tank extends Component<any, any> {
+export default class Tank extends Component<TankPropsModel, TankStateModel> {
+    /**
+     * Available keyboard codes.
+     */
+    protected static readonly AVAILABLE_KEYBOARD_CODES = [
+        'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'
+    ];
+
     /**
      * Local properties.
      */
@@ -32,13 +41,15 @@ export default class Tank extends Component<any, any> {
      *
      * @param props - properties
      */
-    constructor(props: any) {
+    constructor(props: TankPropsModel) {
         super(props);
 
         this.state = {
-            x: this.props.x,
-            y: this.props.y,
-            r: this.props.r
+            location: {
+                x: this.props.location.x,
+                y: this.props.location.y
+            },
+            rotation: this.props.rotation
         };
         this.activeKey = '';
         this.lastMissile = new Date().getTime();
@@ -50,12 +61,22 @@ export default class Tank extends Component<any, any> {
      */
     public componentDidMount(): void {
         World.registerObject(
-            {id: this.props.id, ai: this.props.ai},
-            Collision.BLOCK_ALL,
-            this.state.x,
-            this.state.y,
-            TANK_WIDTH,
-            TANK_HEIGHT);
+            {
+                id: this.props.id,
+                location: {
+                    x: this.state.location.x,
+                    y: this.state.location.y
+                },
+                dimension: {
+                    width: TANK_WIDTH,
+                    height: TANK_HEIGHT
+                },
+                extra: {
+                    ai: this.props.ai
+                }
+            },
+            Collision.BLOCK_ALL
+        );
         this.loopId = window.setInterval(() => this.tick(), GAME_FRAMERATE);
 
         // start "artificial intelligence"
@@ -81,10 +102,10 @@ export default class Tank extends Component<any, any> {
     /**
      * Keyboard handler.
      *
-     * @param e - synthetic event
+     * @param e - keyboard event
      */
-    protected handleKeyboard(e: any): void {
-        if (AVAILABLE_KEYBOARD_CODES.indexOf(e.code) > -1) {
+    protected handleKeyboard(e: KeyboardEvent): void {
+        if (Tank.AVAILABLE_KEYBOARD_CODES.indexOf(e.code) > -1) {
             if (e.code === 'Space' && e.type === 'keydown') {
                 this.fireMissile();
             } else {
@@ -105,10 +126,10 @@ export default class Tank extends Component<any, any> {
             this.lastMissile = new Date().getTime();
             this.props.handleFireMissile({
                 id: uuidv4(),
-                tank: {id: this.props.id, ai: this.props.ai},
-                x: this.state.x,
-                y: this.state.y,
-                r: this.state.r
+                owner: {id: this.props.id, ai: this.props.ai},
+                location: this.state.location,
+                dimension: {width: MISSILE_WIDTH, height: MISSILE_HEIGHT},
+                rotation: this.state.rotation
             });
         }
     }
@@ -145,9 +166,9 @@ export default class Tank extends Component<any, any> {
 
         // handle active key
         if (this.activeKey) {
-            let x = this.state.x;
-            let y = this.state.y;
-            let r = this.state.r;
+            let x = this.state.location.x;
+            let y = this.state.location.y;
+            let r = this.state.rotation;
             let initialDirection = r;
             let correctionAxis = 'x';
             switch (this.activeKey) {
@@ -182,21 +203,26 @@ export default class Tank extends Component<any, any> {
             }
 
             // intersection check
-            if (World.isIntersecting(
-                this.props.id,
-                Collision.BLOCK_MOVE,
-                x,
-                y,
-                TANK_WIDTH,
-                TANK_HEIGHT).length === 0
-            ) {
-                this.setState({x: x, y: y, r: r});
-                World.updateObject(this.props.id, this.state.x, this.state.y);
+            if (World.isIntersecting({
+                    id: this.props.id,
+                    location: {
+                        x: x,
+                        y: y
+                    },
+                    dimension: {
+                        width: TANK_WIDTH,
+                        height: TANK_HEIGHT
+                    }
+                },
+                Collision.BLOCK_MOVE
+            ).length === 0) {
+                this.setState({location: {x: x, y: y}, rotation: r});
+                World.updateObject(this.props.id, this.state.location);
                 this.isStuck = false;
             } else {
                 // just rotate in case of intersection
                 this.isStuck = true;
-                this.setState({r: r});
+                this.setState({rotation: r});
             }
         }
     }
@@ -209,9 +235,9 @@ export default class Tank extends Component<any, any> {
             <div
                 className={`tank${this.props.ai ? ' ai' : ''}`}
                 style={{
-                    transform: `rotate(${this.state.r}deg)`,
-                    top: `${this.state.y}px`,
-                    left: `${this.state.x}px`,
+                    transform: `rotate(${this.state.rotation}deg)`,
+                    top: `${this.state.location.y}px`,
+                    left: `${this.state.location.x}px`,
                     width: TANK_WIDTH,
                     height: TANK_HEIGHT
                 }}
