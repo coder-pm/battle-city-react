@@ -1,7 +1,7 @@
 import uuidv4 from 'uuid/v4';
 import {BOARD_HEIGHT, BOARD_WIDTH, OBSTACLE_HEIGHT, OBSTACLE_WIDTH} from "../../constants";
-import {ObstacleType} from "../../components/Obstacle/ObstacleType";
 import ObstacleModel from "../models/components/ObstacleModel";
+import {ObstacleType} from "../enums/ObstacleType";
 
 export const MAP_1: Array<ObstacleModel> = [
     {

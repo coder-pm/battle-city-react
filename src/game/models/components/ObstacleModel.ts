@@ -1,5 +1,5 @@
 import Structure from "../Structure";
-import {ObstacleType} from "../../../components/Obstacle/ObstacleType";
+import {ObstacleType} from "../../enums/ObstacleType";
 
 /**
  * Interface ObstacleModel - obstacle model.

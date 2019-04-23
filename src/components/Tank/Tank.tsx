@@ -24,7 +24,7 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
     /**
      * Available keyboard codes.
      */
-    protected static readonly AVAILABLE_KEYBOARD_CODES = [
+    protected static readonly AVAILABLE_KEYBOARD_CODES: Array<string> = [
         'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'
     ];
 

@@ -6,25 +6,36 @@ import Missile from "../Missile";
 import Obstacle from "../Obstacle";
 import uuidv4 from 'uuid/v4';
 import assetSoundShot from "../../assets/audio/shot.wav";
-import {ObstacleType} from "../Obstacle/ObstacleType";
+import assetSoundIntro from '../../assets/audio/intro.wav';
 import BoardStateModel from "./BoardStateModel";
-import Stateless from "../../game/models/Stateless";
 import {MAP_1} from "../../game/maps/Map1";
 import {Collision} from "../../game/enums/Collision";
 import World from "../../game/classes/World";
 import MissileModel from "../../game/models/components/MissileModel";
 import TankModel from "../../game/models/components/TankModel";
+import {ObstacleType} from "../../game/enums/ObstacleType";
+import BoardPropsModel from "./BoardPropsModel";
 
 /**
  * Class Board - board component.
  */
-export default class Board extends Component<Stateless, BoardStateModel> {
+export default class Board extends Component<BoardPropsModel, BoardStateModel> {
+    /**
+     * Available keyboard codes.
+     */
+    protected static readonly AVAILABLE_KEYBOARD_CODES: Array<string> = ['Escape'];
+
+    /**
+     * Scheduled timer ids
+     */
+    protected timerIds: { [index: string]: number } = {};
+
     /**
      * Board constructor.
      *
      * @param props - properties
      */
-    public constructor(props: Stateless) {
+    public constructor(props: BoardPropsModel) {
         super(props);
 
         this.state = {
@@ -69,9 +80,40 @@ export default class Board extends Component<Stateless, BoardStateModel> {
             missiles: [],
             sounds: []
         };
+        this.handleKeyboard = this.handleKeyboard.bind(this);
         this.handleFireMissile = this.handleFireMissile.bind(this);
         this.handleFellMissile = this.handleFellMissile.bind(this);
         this.spawnTank = this.spawnTank.bind(this);
+    }
+
+    /**
+     * Method called once after creating component.
+     */
+    public componentDidMount(): void {
+        window.addEventListener('keydown', this.handleKeyboard);
+    }
+
+    /**
+     * Method called once after component removal.
+     */
+    public componentWillUnmount(): void {
+        window.removeEventListener('keydown', this.handleKeyboard);
+        for (const id of Object.values(this.timerIds)) {
+            window.clearInterval(id);
+        }
+    }
+
+    /**
+     * Keyboard handler.
+     *
+     * @param e - keyboard event
+     */
+    protected handleKeyboard(e: KeyboardEvent): void {
+        if (Board.AVAILABLE_KEYBOARD_CODES.indexOf(e.code) > -1) {
+            if (e.code === 'Escape') {
+                this.props.handleStopGame();
+            }
+        }
     }
 
     /**
@@ -85,7 +127,7 @@ export default class Board extends Component<Stateless, BoardStateModel> {
                 missiles: this.state.missiles.concat(missile),
                 sounds: this.state.sounds.concat({id: missile.id})
             });
-            window.setTimeout(() => this.setState({
+            this.deferTimer(() => this.setState({
                 sounds: this.state.sounds.filter((sound) => sound.id !== missile.id)
             }), 500);
         }
@@ -129,7 +171,7 @@ export default class Board extends Component<Stateless, BoardStateModel> {
                     return true;
                 }
                 // set respawn tank timer
-                window.setTimeout(() => this.spawnTank(tank), 2500);
+                this.deferTimer(() => this.spawnTank(tank), 2500);
                 return false;
             }
         );
@@ -149,8 +191,22 @@ export default class Board extends Component<Stateless, BoardStateModel> {
             });
         } else {
             // defer spawning
-            window.setTimeout(() => this.spawnTank(tank), 1000);
+            this.deferTimer(() => this.spawnTank(tank), 1000);
         }
+    }
+
+    /**
+     * Defer callback.
+     *
+     * @param callback - callback
+     * @param delay - delay
+     */
+    protected deferTimer(callback: any, delay: number) {
+        const id = window.setTimeout(() => {
+            callback();
+            delete this.timerIds[id];
+        }, delay);
+        this.timerIds[id] = id;
     }
 
     /**
@@ -199,9 +255,10 @@ export default class Board extends Component<Stateless, BoardStateModel> {
                 }
                 {
                     this.state.sounds.map((sound) => (
-                        <audio key={sound.id} src={assetSoundShot} autoPlay/>
+                        <audio key={sound.id} src={assetSoundShot} preload="auto" autoPlay={true}/>
                     ))
                 }
+                <audio src={assetSoundIntro} preload="auto" autoPlay={true}/>
             </div>
         );
     }
