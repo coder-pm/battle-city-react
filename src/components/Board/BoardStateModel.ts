@@ -1,7 +1,7 @@
-import MissileModel from "../Missile/MissileModel";
-import Sound from "../../models/Sound";
-import TankModel from "../Tank/TankModel";
-import ObstacleModel from "../Obstacle/ObstacleModel";
+import MissileModel from "../../game/models/components/MissileModel";
+import Sound from "../../game/models/Sound";
+import TankModel from "../../game/models/components/TankModel";
+import ObstacleModel from "../../game/models/components/ObstacleModel";
 
 /**
  * Interface BoardStateModel - state model.

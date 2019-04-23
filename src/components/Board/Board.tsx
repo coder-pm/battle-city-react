@@ -6,14 +6,14 @@ import Missile from "../Missile";
 import Obstacle from "../Obstacle";
 import uuidv4 from 'uuid/v4';
 import assetSoundShot from "../../assets/audio/shot.wav";
-import {MAP_1} from "../../maps/Map1";
 import {ObstacleType} from "../Obstacle/ObstacleType";
-import MissileModel from "../Missile/MissileModel";
-import Stateless from "../../models/Stateless";
 import BoardStateModel from "./BoardStateModel";
-import TankModel from "../Tank/TankModel";
-import World from "../../logic/World";
-import {Collision} from "../../enums/Collision";
+import Stateless from "../../game/models/Stateless";
+import {MAP_1} from "../../game/maps/Map1";
+import {Collision} from "../../game/enums/Collision";
+import World from "../../game/classes/World";
+import MissileModel from "../../game/models/components/MissileModel";
+import TankModel from "../../game/models/components/TankModel";
 
 /**
  * Class Board - board component.

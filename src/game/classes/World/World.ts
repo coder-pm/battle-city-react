@@ -1,7 +1,7 @@
-import {BOARD_HEIGHT} from "../../constants";
 import {Collision} from "../../enums/Collision";
 import Structure from "../../models/Structure";
 import Point from "../../models/Point";
+import {BOARD_HEIGHT} from "../../../constants";
 
 /**
  * Class World - class representing world.
@@ -68,7 +68,7 @@ export default class World {
      * @param actor - world object definition
      * @param collision - collision type
      */
-    public static isIntersecting(actor: Structure, collision: Collision): Array<any> {
+    public static isIntersecting(actor: Structure, collision: Collision): Array<Structure> {
         // object position (y axis inversed)
         const tp = {
             l: {x: actor.location.x, y: BOARD_HEIGHT - actor.location.y}, // top left

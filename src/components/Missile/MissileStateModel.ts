@@ -1,4 +1,4 @@
-import Point from "../../models/Point";
+import Point from "../../game/models/Point";
 
 /**
  * Interface MissileStateModel - state model.

@@ -29,9 +29,9 @@ document.querySelectorAll('tr').forEach((row, i) => {
     }
 });
 console.log(`import uuidv4 from 'uuid/v4';
-import {BOARD_HEIGHT, BOARD_WIDTH, OBSTACLE_HEIGHT, OBSTACLE_WIDTH} from "../constants";
-import {ObstacleType} from "../components/Obstacle/ObstacleType";
-import ObstacleModel from "../components/Obstacle/ObstacleModel";
+import {BOARD_HEIGHT, BOARD_WIDTH, OBSTACLE_HEIGHT, OBSTACLE_WIDTH} from "../../constants";
+import {ObstacleType} from "../../components/Obstacle/ObstacleType";
+import ObstacleModel from "../models/components/ObstacleModel";
 
 export const MAP_1: Array<ObstacleModel> = [
     {id: uuidv4(), type: ObstacleType.TRANSPARENT, location: {x: 0, y: 0}, dimension: {width: BOARD_WIDTH, height: OBSTACLE_HEIGHT}},

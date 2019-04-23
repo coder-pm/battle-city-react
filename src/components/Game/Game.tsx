@@ -2,7 +2,7 @@ import './Game.scss';
 import React, {Component, ReactNode} from 'react';
 import Board from "../Board/Board";
 import assetSoundIntro from '../../assets/audio/intro.wav';
-import Stateless from "../../models/Stateless";
+import Stateless from "../../game/models/Stateless";
 
 /**
  * Class Game - game component.

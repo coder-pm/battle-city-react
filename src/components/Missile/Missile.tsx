@@ -1,11 +1,11 @@
 import './Missile.scss';
 import React, {Component, ReactNode} from 'react';
 import {GAME_FRAMERATE, MISSILE_HEIGHT, MISSILE_MOVE_STEP, MISSILE_WIDTH, TANK_WIDTH} from "../../constants";
-import World from "../../logic/World";
-import {Collision} from "../../enums/Collision";
 import MissilePropsModel from "./MissilePropsModel";
 import MissileStateModel from "./MissileStateModel";
-import Point from "../../models/Point";
+import World from "../../game/classes/World";
+import {Collision} from "../../game/enums/Collision";
+import Point from "../../game/models/Point";
 
 /**
  * Class Missile - missile component.

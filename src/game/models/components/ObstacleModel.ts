@@ -1,5 +1,5 @@
-import {ObstacleType} from "./ObstacleType";
-import Structure from "../../models/Structure";
+import Structure from "../Structure";
+import {ObstacleType} from "../../../components/Obstacle/ObstacleType";
 
 /**
  * Interface ObstacleModel - obstacle model.

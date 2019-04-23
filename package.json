@@ -1,6 +1,5 @@
 {
-  "name": "tanks",
-  "version": "0.1.0",
+  "name": "battle-city-react",
   "private": true,
   "dependencies": {
     "node-sass": "^4.11.0",

@@ -1,4 +1,4 @@
-import Structure from "../../models/Structure";
+import Structure from "../Structure";
 
 /**
  * Interface MissileModel - missile model.

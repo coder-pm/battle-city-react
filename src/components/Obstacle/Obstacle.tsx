@@ -1,11 +1,11 @@
 import './Obstacle.scss';
 import React, {Component, ReactNode} from 'react';
-import World from "../../logic/World";
 import {OBSTACLE_HEIGHT, OBSTACLE_WIDTH} from '../../constants';
-import {Collision} from "../../enums/Collision";
 import ObstaclePropsModel from "./ObstaclePropsModel";
-import Stateless from "../../models/Stateless";
 import {ObstacleType} from "./ObstacleType";
+import Stateless from "../../game/models/Stateless";
+import {Collision} from "../../game/enums/Collision";
+import World from "../../game/classes/World";
 
 /**
  * Class Obstacle - obstacle component.

@@ -1,4 +1,5 @@
-import Point from "../../models/Point";
+import Point from "../../game/models/Point";
+import Structure from "../../game/models/Structure";
 
 /**
  * Interface MissilePropsModel - properties model.
@@ -8,5 +9,5 @@ export default interface MissilePropsModel {
     owner: any;
     location: Point;
     rotation: number;
-    handleFellMissile: (id: string, owner: any, objectIds: Array<any>) => void;
+    handleFellMissile: (id: string, owner: any, objectIds: Array<Structure>) => void;
 }

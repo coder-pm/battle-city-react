@@ -1,5 +1,5 @@
-import Point from "../../models/Point";
-import MissileModel from "../Missile/MissileModel";
+import Point from "../../game/models/Point";
+import MissileModel from "../../game/models/components/MissileModel";
 
 /**
  * Interface TankPropsModel - properties model.

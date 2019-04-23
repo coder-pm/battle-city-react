@@ -11,11 +11,11 @@ import {
     TANK_MOVE_STEP,
     TANK_WIDTH
 } from "../../constants";
-import World from "../../logic/World";
 import uuidv4 from 'uuid/v4';
-import {Collision} from "../../enums/Collision";
 import TankPropsModel from "./TankPropsModel";
 import TankStateModel from "./TankStateModel";
+import World from "../../game/classes/World";
+import {Collision} from "../../game/enums/Collision";
 
 /**
  * Class Tank - tank component.

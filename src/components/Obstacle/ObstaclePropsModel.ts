@@ -1,5 +1,5 @@
-import Point from "../../models/Point";
-import Dimension from "../../models/Dimension";
+import Point from "../../game/models/Point";
+import Dimension from "../../game/models/Dimension";
 
 /**
  * Interface ObstaclePropsModel - properties model.
