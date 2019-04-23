@@ -43,7 +43,8 @@ export default class Missile extends Component<MissilePropsModel, MissileStateMo
         const positionFix = Math.round(TANK_WIDTH / 2) - Math.round(MISSILE_WIDTH / 2);
         this.state = {
             location: this.calculateNextCoordinates(
-                Math.round(TANK_WIDTH / 2) * operator,
+                // half tank + offset to prevent collision with missile while firing and moving
+                (Math.round(TANK_WIDTH / 2) + 10) * operator,
                 {
                     x: this.props.location.x + positionFix,
                     y: this.props.location.y + positionFix

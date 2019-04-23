@@ -220,9 +220,12 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
                 World.updateObject(this.props.id, this.state.location);
                 this.isStuck = false;
             } else {
-                // just rotate in case of intersection
                 this.isStuck = true;
-                this.setState({rotation: r});
+                // just rotate in case of intersection
+                // but prevent rotation of stucked AI as it looks like glitch
+                if (!this.props.ai || !this.isStuck) {
+                    this.setState({rotation: r});
+                }
             }
         }
     }
