@@ -55,8 +55,9 @@ export default class MainMenu extends Component<MainMenuPropsModel, MainMenuStat
                 this.props.handleStartGame(this.state.selectedMode);
             } else if (['ArrowUp', 'ArrowDown'].indexOf(e.code) > -1) {
                 this.setState({
-                    selectedMode: this.state.selectedMode === GameMode.SINGLE_PLAYER ?
-                        GameMode.ONLINE_MULTIPLAYER : GameMode.SINGLE_PLAYER
+                    selectedMode:GameMode.SINGLE_PLAYER
+                    // selectedMode: this.state.selectedMode === GameMode.SINGLE_PLAYER ?
+                    //     GameMode.ONLINE_MULTIPLAYER : GameMode.SINGLE_PLAYER
                 })
             }
         }
@@ -72,7 +73,7 @@ export default class MainMenu extends Component<MainMenuPropsModel, MainMenuStat
                     <li className={this.state.selectedMode === GameMode.SINGLE_PLAYER ? 'selected' : ''}>
                         Single Player
                     </li>
-                    <li className={this.state.selectedMode === GameMode.ONLINE_MULTIPLAYER ? 'selected' : ''}>
+                    <li className={this.state.selectedMode === GameMode.ONLINE_MULTIPLAYER ? 'selected' : 'disabled'}>
                         Online Multiplayer
                     </li>
                 </ul>

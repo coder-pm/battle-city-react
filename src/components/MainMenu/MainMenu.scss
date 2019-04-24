@@ -17,6 +17,10 @@
       line-height: 42px;
       text-transform: uppercase;
 
+      &.disabled {
+        color: #212121;
+      }
+
       &.selected {
         &:before {
           content: '';
