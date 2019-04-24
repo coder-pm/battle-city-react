@@ -1,6 +1,9 @@
+import World from "../../game/classes/World";
+
 /**
  * Interface BoardPropsModel - properties model.
  */
 export default interface BoardPropsModel {
-    handleStopGame: () => void
+    world: World;
+    handleStopGame: () => void;
 }

@@ -10,7 +10,7 @@ export default class World {
     /**
      * Objects registry.
      */
-    protected static readonly REGISTRY: {
+    protected readonly REGISTRY: {
         [index: string]: {
             structure: Structure,
             collisions: Array<Collision>
@@ -20,7 +20,7 @@ export default class World {
     /**
      * Collision map.
      */
-    protected static readonly COLLISION_MAP = {
+    protected readonly COLLISION_MAP = {
         [Collision.BLOCK_ALL]: [Collision.BLOCK_MOVE, Collision.BLOCK_SHOT],
         [Collision.BLOCK_MOVE]: [Collision.BLOCK_MOVE],
         [Collision.BLOCK_SHOT]: [Collision.BLOCK_SHOT],
@@ -33,7 +33,7 @@ export default class World {
      * @param object - world object definition
      * @param collision - object collision type
      */
-    public static registerObject(object: Structure, collision: Collision): void {
+    public registerObject(object: Structure, collision: Collision): void {
         const collisions: Array<Collision> = [];
         if (collision === Collision.BLOCK_ALL) {
             collisions.push(Collision.BLOCK_MOVE, Collision.BLOCK_SHOT);
@@ -49,7 +49,7 @@ export default class World {
      * @param id - object id
      * @param location - new location
      */
-    public static updateObject(id: string, location: Point): void {
+    public updateObject(id: string, location: Point): void {
         this.REGISTRY[id].structure.location = location;
     }
 
@@ -58,7 +58,7 @@ export default class World {
      *
      * @param id - object id
      */
-    public static removeObject(id: string): void {
+    public removeObject(id: string): void {
         delete this.REGISTRY[id];
     }
 
@@ -68,7 +68,7 @@ export default class World {
      * @param actor - world object definition
      * @param collision - collision type
      */
-    public static isIntersecting(actor: Structure, collision: Collision): Array<Structure> {
+    public isIntersecting(actor: Structure, collision: Collision): Array<Structure> {
         // object position (y axis inversed)
         const tp = {
             l: {x: actor.location.x, y: BOARD_HEIGHT - actor.location.y}, // top left

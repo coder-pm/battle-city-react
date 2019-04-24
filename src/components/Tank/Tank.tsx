@@ -60,7 +60,7 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
      * Method called once after creating component.
      */
     public componentDidMount(): void {
-        World.registerObject(
+        this.props.world.registerObject(
             {
                 id: this.props.id,
                 location: {
@@ -90,7 +90,7 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
      * Method called once after component removal.
      */
     public componentWillUnmount(): void {
-        World.removeObject(this.props.id);
+        this.props.world.removeObject(this.props.id);
         window.clearInterval(this.loopId);
 
         if (!this.props.ai) {
@@ -203,7 +203,7 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
             }
 
             // intersection check
-            if (World.isIntersecting({
+            if (this.props.world.isIntersecting({
                     id: this.props.id,
                     location: {
                         x: x,
@@ -217,7 +217,7 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
                 Collision.BLOCK_MOVE
             ).length === 0) {
                 this.setState({location: {x: x, y: y}, rotation: r});
-                World.updateObject(this.props.id, this.state.location);
+                this.props.world.updateObject(this.props.id, this.state.location);
                 this.isStuck = false;
             } else {
                 this.isStuck = true;

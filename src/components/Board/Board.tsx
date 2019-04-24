@@ -185,7 +185,7 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
      */
     protected spawnTank(tank: TankModel): void {
         // check if its possible to spawn tank here
-        if (World.isIntersecting(tank, Collision.BLOCK_MOVE).length === 0) {
+        if (this.props.world.isIntersecting(tank, Collision.BLOCK_MOVE).length === 0) {
             this.setState({
                 tanks: this.state.tanks.concat(tank)
             });
@@ -226,6 +226,7 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
                             ai={tank.ai}
                             location={tank.location}
                             rotation={tank.rotation}
+                            world={this.props.world}
                             handleFireMissile={this.handleFireMissile}
                         />
                     ))
@@ -238,6 +239,7 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
                             type={obstacle.type}
                             location={obstacle.location}
                             dimension={obstacle.dimension}
+                            world={this.props.world}
                         />
                     ))
                 }
@@ -249,6 +251,7 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
                             owner={missile.owner}
                             location={missile.location}
                             rotation={missile.rotation}
+                            world={this.props.world}
                             handleFellMissile={this.handleFellMissile}
                         />
                     ))

@@ -1,21 +1,21 @@
 import './Game.scss';
 import React, {Component, ReactNode} from 'react';
 import Board from "../Board/Board";
-import Stateless from "../../game/models/Stateless";
 import GameStateModel from "./GameStateModel";
 import {GameMode} from "../../game/enums/GameMode";
 import MainMenu from "../MainMenu/MainMenu";
+import GamePropsModel from "./GamePropsModel";
 
 /**
  * Class Game - game component.
  */
-export default class Game extends Component<Stateless, GameStateModel> {
+export default class Game extends Component<GamePropsModel, GameStateModel> {
     /**
      * Game constructor.
      *
      * @param props - properties
      */
-    constructor(props: Stateless) {
+    constructor(props: GamePropsModel) {
         super(props);
 
         this.state = {
@@ -53,7 +53,7 @@ export default class Game extends Component<Stateless, GameStateModel> {
             <div className="game">
                 {
                     this.state.activeMode ?
-                        <Board handleStopGame={this.handleStopGame}/>
+                        <Board world={this.props.world} handleStopGame={this.handleStopGame}/>
                         :
                         <MainMenu handleStartGame={this.handleStartGame}/>
                 }

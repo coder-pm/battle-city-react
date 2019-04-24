@@ -57,7 +57,7 @@ export default class Missile extends Component<MissilePropsModel, MissileStateMo
      * Method called once after creating component.
      */
     public componentDidMount(): void {
-        World.registerObject(
+        this.props.world.registerObject(
             {
                 id: this.props.id,
                 location: {
@@ -78,7 +78,7 @@ export default class Missile extends Component<MissilePropsModel, MissileStateMo
      * Method called once after component removal.
      */
     public componentWillUnmount(): void {
-        World.removeObject(this.props.id);
+        this.props.world.removeObject(this.props.id);
         window.clearInterval(this.loopId);
     }
 
@@ -88,7 +88,7 @@ export default class Missile extends Component<MissilePropsModel, MissileStateMo
     protected tick(): void {
         // calculate new coordinates and check if missile may move there
         const newCoords = this.calculateNextCoordinates();
-        const objectIds = World.isIntersecting({
+        const objectIds = this.props.world.isIntersecting({
                 id: this.props.id,
                 location: {
                     x: newCoords.x,
@@ -107,7 +107,7 @@ export default class Missile extends Component<MissilePropsModel, MissileStateMo
             this.props.handleFellMissile(this.props.id, this.props.owner, objectIds);
         } else {
             this.setState({location: newCoords});
-            World.updateObject(this.props.id, this.state.location);
+            this.props.world.updateObject(this.props.id, this.state.location);
         }
     }
 

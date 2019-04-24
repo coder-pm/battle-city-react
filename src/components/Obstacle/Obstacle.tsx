@@ -26,7 +26,7 @@ export default class Obstacle extends Component<ObstaclePropsModel, Stateless> {
             default:
                 collision = Collision.BLOCK_ALL
         }
-        World.registerObject(
+        this.props.world.registerObject(
             {
                 id: this.props.id,
                 location: {
@@ -46,7 +46,7 @@ export default class Obstacle extends Component<ObstaclePropsModel, Stateless> {
      * Method called once after component removal.
      */
     public componentWillUnmount(): void {
-        World.removeObject(this.props.id);
+        this.props.world.removeObject(this.props.id);
     }
 
     /**
