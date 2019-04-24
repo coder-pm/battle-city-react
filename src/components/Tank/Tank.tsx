@@ -14,7 +14,6 @@ import {
 import uuidv4 from 'uuid/v4';
 import TankPropsModel from "./TankPropsModel";
 import TankStateModel from "./TankStateModel";
-import World from "../../game/classes/World";
 import {Collision} from "../../game/enums/Collision";
 
 /**
@@ -70,9 +69,6 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
                 dimension: {
                     width: TANK_WIDTH,
                     height: TANK_HEIGHT
-                },
-                extra: {
-                    ai: this.props.ai
                 }
             },
             Collision.BLOCK_ALL

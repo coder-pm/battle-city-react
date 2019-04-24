@@ -8,5 +8,4 @@ export default interface Structure {
     id: string;
     location: Point;
     dimension: Dimension;
-    extra?: any;
 }
