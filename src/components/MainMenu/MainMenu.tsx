@@ -28,6 +28,7 @@ export default class MainMenu extends Component<MainMenuPropsModel, MainMenuStat
         };
 
         this.handleKeyboard = this.handleKeyboard.bind(this);
+        this.handleTouch = this.handleTouch.bind(this);
     }
 
     /**
@@ -35,6 +36,7 @@ export default class MainMenu extends Component<MainMenuPropsModel, MainMenuStat
      */
     public componentDidMount(): void {
         window.addEventListener('keydown', this.handleKeyboard);
+        window.addEventListener('touchstart', this.handleTouch);
     }
 
     /**
@@ -42,6 +44,7 @@ export default class MainMenu extends Component<MainMenuPropsModel, MainMenuStat
      */
     public componentWillUnmount(): void {
         window.removeEventListener('keydown', this.handleKeyboard);
+        window.removeEventListener('touchstart', this.handleTouch);
     }
 
     /**
@@ -55,10 +58,23 @@ export default class MainMenu extends Component<MainMenuPropsModel, MainMenuStat
                 this.props.handleStartGame(this.state.selectedMode);
             } else if (['ArrowUp', 'ArrowDown'].indexOf(e.code) > -1) {
                 this.setState({
-                    selectedMode:GameMode.SINGLE_PLAYER
-                    // selectedMode: this.state.selectedMode === GameMode.SINGLE_PLAYER ?
-                    //     GameMode.ONLINE_MULTIPLAYER : GameMode.SINGLE_PLAYER
+                    selectedMode: GameMode.SINGLE_PLAYER
                 })
+            }
+        }
+    }
+
+    /**
+     * Touch handler.
+     *
+     * @param e - touch event
+     */
+    protected handleTouch(e: TouchEvent): void {
+        if (e.target) {
+            const target = e.target as HTMLElement;
+            const mode: GameMode | null = target.getAttribute('data-mode') as GameMode;
+            if (!target.classList.contains('disabled') && mode === GameMode.SINGLE_PLAYER) {
+                this.props.handleStartGame(mode);
             }
         }
     }
@@ -70,10 +86,12 @@ export default class MainMenu extends Component<MainMenuPropsModel, MainMenuStat
         return (
             <div className="main-menu">
                 <ul>
-                    <li className={this.state.selectedMode === GameMode.SINGLE_PLAYER ? 'selected' : ''}>
+                    <li data-mode={GameMode.SINGLE_PLAYER}
+                        className={this.state.selectedMode === GameMode.SINGLE_PLAYER ? 'selected' : ''}>
                         Single Player
                     </li>
-                    <li className={this.state.selectedMode === GameMode.ONLINE_MULTIPLAYER ? 'selected' : 'disabled'}>
+                    <li data-mode={GameMode.ONLINE_MULTIPLAYER}
+                        className={this.state.selectedMode === GameMode.ONLINE_MULTIPLAYER ? 'selected' : 'disabled'}>
                         Online Multiplayer
                     </li>
                 </ul>
