@@ -3,7 +3,6 @@ import React, {Component, ReactNode} from 'react';
 import {GAME_FRAMERATE, MISSILE_HEIGHT, MISSILE_MOVE_STEP, MISSILE_WIDTH, TANK_WIDTH} from "../../constants";
 import MissilePropsModel from "./MissilePropsModel";
 import MissileStateModel from "./MissileStateModel";
-import World from "../../game/classes/World";
 import {Collision} from "../../game/enums/Collision";
 import Point from "../../game/models/Point";
 
@@ -14,7 +13,7 @@ export default class Missile extends Component<MissilePropsModel, MissileStateMo
     /**
      * Missile direction map.
      */
-    protected static readonly DIRECTION_MAP: any = {
+    protected static readonly DIRECTION_MAP: { [index: number]: string } = {
         0: '-top',
         90: '+left',
         180: '+top',
@@ -104,7 +103,7 @@ export default class Missile extends Component<MissilePropsModel, MissileStateMo
 
         // handle missile fell if it hits other object or continue moving
         if (objectIds.length > 0) {
-            this.props.handleFellMissile(this.props.id, this.props.owner, objectIds);
+            this.props.handleFellMissile(this.props.id, this.props.tankId, objectIds);
         } else {
             this.setState({location: newCoords});
             this.props.world.updateObject(this.props.id, this.state.location);

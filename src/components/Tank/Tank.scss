@@ -3,7 +3,11 @@
   z-index: 100;
   background: url('./../../assets/img/tank.svg') top left no-repeat;
 
-  &.ai {
+  &.actor-player {
+    background: url('./../../assets/img/tank-player.svg') top left no-repeat;
+  }
+
+  &.actor-ai {
     background: url('./../../assets/img/tank-ai.svg') top left no-repeat;
   }
 }

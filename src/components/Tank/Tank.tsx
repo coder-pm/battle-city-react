@@ -15,6 +15,7 @@ import uuidv4 from 'uuid/v4';
 import TankPropsModel from "./TankPropsModel";
 import TankStateModel from "./TankStateModel";
 import {Collision} from "../../game/enums/Collision";
+import {TankActor} from "../../game/enums/TankActor";
 
 /**
  * Class Tank - tank component.
@@ -76,7 +77,7 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
         this.loopId = window.setInterval(() => this.tick(), GAME_FRAMERATE);
 
         // start "artificial intelligence"
-        if (!this.props.ai) {
+        if (this.props.actor === TankActor.SELF) {
             window.addEventListener('keydown', this.handleKeyboard);
             window.addEventListener('keyup', this.handleKeyboard);
         }
@@ -89,7 +90,7 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
         this.props.world.removeObject(this.props.id);
         window.clearInterval(this.loopId);
 
-        if (!this.props.ai) {
+        if (this.props.actor === TankActor.SELF) {
             window.removeEventListener('keydown', this.handleKeyboard);
             window.removeEventListener('keyup', this.handleKeyboard);
         }
@@ -122,7 +123,7 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
             this.lastMissile = new Date().getTime();
             this.props.handleFireMissile({
                 id: uuidv4(),
-                owner: {id: this.props.id, ai: this.props.ai},
+                tankId: this.props.id,
                 location: this.state.location,
                 dimension: {width: MISSILE_WIDTH, height: MISSILE_HEIGHT},
                 rotation: this.state.rotation
@@ -156,7 +157,7 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
      */
     protected tick(): void {
         // call ai if active
-        if (this.props.ai) {
+        if (this.props.actor === TankActor.AI) {
             this.ai();
         }
 
@@ -219,7 +220,7 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
                 this.isStuck = true;
                 // just rotate in case of intersection
                 // but prevent rotation of stucked AI as it looks like glitch
-                if (!this.props.ai || !this.isStuck) {
+                if (this.props.actor !== TankActor.AI || !this.isStuck) {
                     this.setState({rotation: r});
                 }
             }
@@ -232,7 +233,7 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
     public render(): ReactNode {
         return (
             <div
-                className={`tank${this.props.ai ? ' ai' : ''}`}
+                className={`tank actor-${this.props.actor}`}
                 style={{
                     transform: `rotate(${this.state.rotation}deg)`,
                     top: `${this.state.location.y}px`,

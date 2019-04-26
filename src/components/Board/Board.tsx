@@ -10,11 +10,12 @@ import assetSoundIntro from '../../assets/audio/intro.wav';
 import BoardStateModel from "./BoardStateModel";
 import {MAP_1} from "../../game/maps/Map1";
 import {Collision} from "../../game/enums/Collision";
-import World from "../../game/classes/World";
 import MissileModel from "../../game/models/components/MissileModel";
 import TankModel from "../../game/models/components/TankModel";
 import {ObstacleType} from "../../game/enums/ObstacleType";
 import BoardPropsModel from "./BoardPropsModel";
+import {TankActor} from "../../game/enums/TankActor";
+import Structure from "../../game/models/Structure";
 
 /**
  * Class Board - board component.
@@ -45,35 +46,35 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
                     location: {x: 25, y: 25},
                     dimension: {width: TANK_WIDTH, height: TANK_HEIGHT},
                     rotation: 90,
-                    ai: false
+                    actor: TankActor.SELF
                 },
                 {
                     id: uuidv4(),
                     location: {x: 1061, y: 124},
                     dimension: {width: TANK_WIDTH, height: TANK_HEIGHT},
                     rotation: 270,
-                    ai: true
+                    actor: TankActor.AI
                 },
                 {
                     id: uuidv4(),
                     location: {x: 1061, y: 224},
                     dimension: {width: TANK_WIDTH, height: TANK_HEIGHT},
                     rotation: 270,
-                    ai: true
+                    actor: TankActor.AI
                 },
                 {
                     id: uuidv4(),
                     location: {x: 1061, y: 424},
                     dimension: {width: TANK_WIDTH, height: TANK_HEIGHT},
                     rotation: 270,
-                    ai: true
+                    actor: TankActor.AI
                 },
                 {
                     id: uuidv4(),
                     location: {x: 1061, y: 702},
                     dimension: {width: TANK_WIDTH, height: TANK_HEIGHT},
                     rotation: 0,
-                    ai: true
+                    actor: TankActor.AI
                 }
             ],
             obstacles: MAP_1,
@@ -122,7 +123,7 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
      * @param missile - missile definition
      */
     protected handleFireMissile(missile: MissileModel): void {
-        if (this.state.missiles.filter((m) => m.owner.id === missile.owner.id).length === 0) {
+        if (this.state.missiles.filter((m) => m.tankId === missile.tankId).length === 0) {
             this.setState({
                 missiles: this.state.missiles.concat(missile),
                 sounds: this.state.sounds.concat({id: missile.id})
@@ -137,45 +138,48 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
      * Missile fell handler.
      *
      * @param id - missile id
-     * @param originTank - tank that fired a missile
+     * @param tankId - id of tank that fired a missile
      * @param hitObjects - objects that were hit by missile
      */
-    protected handleFellMissile(id: string, originTank: any, hitObjects: any): void {
+    protected handleFellMissile(id: string, tankId: string, hitObjects: Array<Structure>): void {
         const newState: any = {};
-        // remove hit missiles
-        newState.missiles = this.state.missiles.filter(
-            (missile) => !(
-                missile.id === id ||
-                hitObjects.filter((o: any) => o.id === missile.id).length > 0
-            )
-        );
-        // remove hit destructible obstacles
-        newState.obstacles = this.state.obstacles.filter(
-            (obstacle) => !(
-                hitObjects.filter((o: any) => o.id === obstacle.id).length > 0 &&
-                // it should be not possible to destroy metal and transparent obstacles
-                [ObstacleType.METAL, ObstacleType.TRANSPARENT].indexOf(obstacle.type) === -1
-            )
-        );
-        // remove hit tanks
-        newState.tanks = this.state.tanks.filter(
-            (tank) => {
-                if (
-                    // this tank wasn't hit
-                    hitObjects.filter((o: any) => o.id === tank.id).length === 0 ||
-                    // ignore if ai hit ai
-                    tank.ai === originTank.ai ||
-                    // ignore if we hit self
-                    tank.id === originTank.id
-                ) {
-                    return true;
+        const ownerTank = this.state.tanks.filter((tank) => tank.id === tankId).shift();
+        if (ownerTank) {
+            // remove hit missiles
+            newState.missiles = this.state.missiles.filter(
+                (missile) => !(
+                    missile.id === id ||
+                    hitObjects.filter((o) => o.id === missile.id).length > 0
+                )
+            );
+            // remove hit destructible obstacles
+            newState.obstacles = this.state.obstacles.filter(
+                (obstacle) => !(
+                    hitObjects.filter((o) => o.id === obstacle.id).length > 0 &&
+                    // it should be not possible to destroy metal and transparent obstacles
+                    [ObstacleType.METAL, ObstacleType.TRANSPARENT].indexOf(obstacle.type) === -1
+                )
+            );
+            // remove hit tanks
+            newState.tanks = this.state.tanks.filter(
+                (tank) => {
+                    if (
+                        // this tank wasn't hit
+                        hitObjects.filter((o) => o.id === tank.id).length === 0 ||
+                        // ignore if ai hit ai
+                        (tank.actor === TankActor.AI && ownerTank.actor === TankActor.AI) ||
+                        // ignore if we hit self
+                        tank.id === ownerTank.id
+                    ) {
+                        return true;
+                    }
+                    // set respawn tank timer
+                    this.deferTimer(() => this.spawnTank(tank), 2500);
+                    return false;
                 }
-                // set respawn tank timer
-                this.deferTimer(() => this.spawnTank(tank), 2500);
-                return false;
-            }
-        );
-        this.setState(newState);
+            );
+            this.setState(newState);
+        }
     }
 
     /**
@@ -201,7 +205,7 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
      * @param callback - callback
      * @param delay - delay
      */
-    protected deferTimer(callback: any, delay: number) {
+    protected deferTimer(callback: Function, delay: number) {
         const id = window.setTimeout(() => {
             callback();
             delete this.timerIds[id];
@@ -223,7 +227,7 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
                         <Tank
                             key={tank.id}
                             id={tank.id}
-                            ai={tank.ai}
+                            actor={tank.actor}
                             location={tank.location}
                             rotation={tank.rotation}
                             world={this.props.world}
@@ -248,7 +252,7 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
                         <Missile
                             key={missile.id}
                             id={missile.id}
-                            owner={missile.owner}
+                            tankId={missile.tankId}
                             location={missile.location}
                             rotation={missile.rotation}
                             world={this.props.world}

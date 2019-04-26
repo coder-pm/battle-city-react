@@ -7,9 +7,9 @@ import World from "../../game/classes/World";
  */
 export default interface MissilePropsModel {
     id: string;
-    owner: any;
+    tankId: string;
     location: Point;
     rotation: number;
     world: World;
-    handleFellMissile: (id: string, owner: any, objectIds: Array<Structure>) => void;
+    handleFellMissile: (id: string, tankId: string, objectIds: Array<Structure>) => void;
 }
