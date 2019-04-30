@@ -16,6 +16,10 @@ import {ObstacleType} from "../../game/enums/ObstacleType";
 import BoardPropsModel from "./BoardPropsModel";
 import {TankActor} from "../../game/enums/TankActor";
 import Structure from "../../game/models/Structure";
+import {GameMode} from "../../game/enums/GameMode";
+import Network from "../../game/classes/Network";
+import {NetworkPacket} from "../../game/enums/NetworkPacket";
+import ObstacleModel from "../../game/models/components/ObstacleModel";
 
 /**
  * Class Board - board component.
@@ -40,7 +44,8 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
         super(props);
 
         this.state = {
-            tanks: [
+            // TODO: spawn points
+            tanks: this.props.mode === GameMode.SINGLE_PLAYER ? [
                 {
                     id: uuidv4(),
                     location: {x: 25, y: 25},
@@ -76,14 +81,15 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
                     rotation: 0,
                     actor: TankActor.AI
                 }
-            ],
-            obstacles: MAP_1,
+            ] : [],
+            obstacles: this.props.mode === GameMode.SINGLE_PLAYER ? MAP_1 : [],
             missiles: [],
             sounds: []
         };
         this.handleKeyboard = this.handleKeyboard.bind(this);
         this.handleFireMissile = this.handleFireMissile.bind(this);
         this.handleFellMissile = this.handleFellMissile.bind(this);
+        this.handleNetworkOnConnected = this.handleNetworkOnConnected.bind(this);
         this.spawnTank = this.spawnTank.bind(this);
     }
 
@@ -92,6 +98,9 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
      */
     public componentDidMount(): void {
         window.addEventListener('keydown', this.handleKeyboard);
+        if (this.props.mode === GameMode.ONLINE_MULTIPLAYER) {
+            Network.connect(this.handleNetworkOnConnected);
+        }
     }
 
     /**
@@ -101,6 +110,9 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
         window.removeEventListener('keydown', this.handleKeyboard);
         for (const id of Object.values(this.timerIds)) {
             window.clearInterval(id);
+        }
+        if (this.props.mode === GameMode.ONLINE_MULTIPLAYER) {
+            Network.disconnect();
         }
     }
 
@@ -180,6 +192,30 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
             );
             this.setState(newState);
         }
+    }
+
+    /**
+     * Handle network on connected event.
+     *
+     * @param clientId - client identifier obtained from server (tank id)
+     */
+    protected handleNetworkOnConnected(clientId: string): void {
+        // receive obstacles
+        Network.listen(NetworkPacket.BOARD_STATE_OBSTACLES, (obstacles: Array<ObstacleModel>) => {
+            this.setState({obstacles: obstacles})
+        });
+        // receive tanks
+        Network.listen(NetworkPacket.BOARD_STATE_TANKS, (tanks: Array<TankModel>) => {
+            this.setState({
+                // mark our tank as actor self
+                tanks: tanks.map((tank) => {
+                    if (tank.id === clientId) {
+                        tank.actor = TankActor.SELF;
+                    }
+                    return tank;
+                })
+            })
+        });
     }
 
     /**

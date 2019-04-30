@@ -5,10 +5,7 @@ import {
     MISSILE_HEIGHT,
     MISSILE_THROTTLE_TIME,
     MISSILE_WIDTH,
-    OBSTACLE_HEIGHT,
-    OBSTACLE_WIDTH,
     TANK_HEIGHT,
-    TANK_MOVE_STEP,
     TANK_WIDTH
 } from "../../constants";
 import uuidv4 from 'uuid/v4';
@@ -16,6 +13,10 @@ import TankPropsModel from "./TankPropsModel";
 import TankStateModel from "./TankStateModel";
 import {Collision} from "../../game/enums/Collision";
 import {TankActor} from "../../game/enums/TankActor";
+import Network from "../../game/classes/Network";
+import {NetworkPacket} from "../../game/enums/NetworkPacket";
+import {TANK_MOVE_HANDLER} from "../../game/handlers/TankMoveHandler";
+import ServerTankEventKeyboardPacket from "../../game/models/network/ServerTankEventKeyboardPacket";
 
 /**
  * Class Tank - tank component.
@@ -81,6 +82,17 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
             window.addEventListener('keydown', this.handleKeyboard);
             window.addEventListener('keyup', this.handleKeyboard);
         }
+
+        // listen to keyboard event
+        Network.listen(NetworkPacket.TANK_EVENT_KEYBOARD, (packet: ServerTankEventKeyboardPacket) => {
+            if (this.props.id === packet.tankId) {
+                this.activeKey = packet.key;
+                this.setState({
+                    location: packet.location,
+                    rotation: packet.rotation
+                })
+            }
+        })
     }
 
     /**
@@ -108,8 +120,10 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
             } else {
                 if (e.type === 'keydown') {
                     this.activeKey = e.code;
+                    Network.emit(NetworkPacket.TANK_EVENT_KEYBOARD, this.activeKey);
                 } else if (this.activeKey === e.code) {
                     this.activeKey = '';
+                    Network.emit(NetworkPacket.TANK_EVENT_KEYBOARD, '');
                 }
             }
         }
@@ -162,69 +176,21 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
         }
 
         // handle active key
-        if (this.activeKey) {
-            let x = this.state.location.x;
-            let y = this.state.location.y;
-            let r = this.state.rotation;
-            let initialDirection = r;
-            let correctionAxis = 'x';
-            switch (this.activeKey) {
-                case 'ArrowUp':
-                    y -= TANK_MOVE_STEP;
-                    r = 0;
-                    break;
-                case 'ArrowRight':
-                    x += TANK_MOVE_STEP;
-                    r = 90;
-                    correctionAxis = 'y';
-                    break;
-                case 'ArrowDown':
-                    y += TANK_MOVE_STEP;
-                    r = 180;
-                    break;
-                case 'ArrowLeft':
-                    x -= TANK_MOVE_STEP;
-                    r = 270;
-                    correctionAxis = 'y';
-                    break;
-                default:
+        const move = TANK_MOVE_HANDLER({
+            id: this.props.id,
+            location: this.state.location,
+            rotation: this.state.rotation,
+            actor: this.props.actor,
+            dimension: {
+                width: TANK_WIDTH,
+                height: TANK_HEIGHT
             }
-
-            // move correction (stick to grid)
-            if (initialDirection !== r) {
-                if (correctionAxis === 'x') {
-                    x = 3 + (Math.round(x / OBSTACLE_WIDTH) * OBSTACLE_WIDTH);
-                } else {
-                    y = 3 + (Math.round(y / OBSTACLE_HEIGHT) * OBSTACLE_HEIGHT);
-                }
-            }
-
-            // intersection check
-            if (this.props.world.isIntersecting({
-                    id: this.props.id,
-                    location: {
-                        x: x,
-                        y: y
-                    },
-                    dimension: {
-                        width: TANK_WIDTH,
-                        height: TANK_HEIGHT
-                    }
-                },
-                Collision.BLOCK_MOVE
-            ).length === 0) {
-                this.setState({location: {x: x, y: y}, rotation: r});
-                this.props.world.updateObject(this.props.id, this.state.location);
-                this.isStuck = false;
-            } else {
-                this.isStuck = true;
-                // just rotate in case of intersection
-                // but prevent rotation of stucked AI as it looks like glitch
-                if (this.props.actor !== TankActor.AI || !this.isStuck) {
-                    this.setState({rotation: r});
-                }
-            }
-        }
+        }, this.props.world, this.isStuck, this.activeKey);
+        this.setState({
+            location: move.location,
+            rotation: move.rotation
+        });
+        this.isStuck = move.isStuck;
     }
 
     /**

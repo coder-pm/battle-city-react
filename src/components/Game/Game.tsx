@@ -53,7 +53,10 @@ export default class Game extends Component<GamePropsModel, GameStateModel> {
             <div className="game">
                 {
                     this.state.activeMode ?
-                        <Board world={this.props.world} handleStopGame={this.handleStopGame}/>
+                        <Board
+                            world={this.props.world}
+                            mode={this.state.activeMode}
+                            handleStopGame={this.handleStopGame}/>
                         :
                         <MainMenu handleStartGame={this.handleStartGame}/>
                 }

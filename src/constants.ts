@@ -1,3 +1,5 @@
+export const GAME_SERVER_ADDRESS: string = '192.168.1.101';
+export const GAME_SERVER_PORT: number = 3100;
 export const GAME_FRAMERATE: number = Math.floor(1000 / 60);
 export const BOARD_WIDTH: number = 1080 + (2 * 24);
 export const BOARD_HEIGHT: number = 720 + (2 * 24);

@@ -58,7 +58,8 @@ export default class MainMenu extends Component<MainMenuPropsModel, MainMenuStat
                 this.props.handleStartGame(this.state.selectedMode);
             } else if (['ArrowUp', 'ArrowDown'].indexOf(e.code) > -1) {
                 this.setState({
-                    selectedMode: GameMode.SINGLE_PLAYER
+                    selectedMode: this.state.selectedMode === GameMode.SINGLE_PLAYER ?
+                        GameMode.ONLINE_MULTIPLAYER : GameMode.SINGLE_PLAYER
                 })
             }
         }
@@ -73,7 +74,7 @@ export default class MainMenu extends Component<MainMenuPropsModel, MainMenuStat
         if (e.target) {
             const target = e.target as HTMLElement;
             const mode: GameMode | null = target.getAttribute('data-mode') as GameMode;
-            if (!target.classList.contains('disabled') && mode === GameMode.SINGLE_PLAYER) {
+            if (!target.classList.contains('disabled') && mode !== null) {
                 this.props.handleStartGame(mode);
             }
         }
@@ -91,7 +92,7 @@ export default class MainMenu extends Component<MainMenuPropsModel, MainMenuStat
                         Single Player
                     </li>
                     <li data-mode={GameMode.ONLINE_MULTIPLAYER}
-                        className={this.state.selectedMode === GameMode.ONLINE_MULTIPLAYER ? 'selected' : 'disabled'}>
+                        className={this.state.selectedMode === GameMode.ONLINE_MULTIPLAYER ? 'selected' : ''}>
                         Online Multiplayer
                     </li>
                 </ul>
