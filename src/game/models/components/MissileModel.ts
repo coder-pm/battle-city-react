@@ -6,4 +6,6 @@ import Structure from "../Structure";
 export default interface MissileModel extends Structure {
     tankId: string;
     rotation: number;
+    direction: number;
+    axis: string;
 }

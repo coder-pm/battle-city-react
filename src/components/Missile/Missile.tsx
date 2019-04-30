@@ -1,30 +1,18 @@
 import './Missile.scss';
 import React, {Component, ReactNode} from 'react';
-import {GAME_FRAMERATE, MISSILE_HEIGHT, MISSILE_MOVE_STEP, MISSILE_WIDTH, TANK_WIDTH} from "../../constants";
+import {GAME_FRAMERATE, MISSILE_HEIGHT, MISSILE_WIDTH} from "../../constants";
 import MissilePropsModel from "./MissilePropsModel";
 import MissileStateModel from "./MissileStateModel";
 import {Collision} from "../../game/enums/Collision";
-import Point from "../../game/models/Point";
+import {MISSILE_MOVE_HANDLER} from "../../game/handlers/MissileMoveHandler";
 
 /**
  * Class Missile - missile component.
  */
 export default class Missile extends Component<MissilePropsModel, MissileStateModel> {
     /**
-     * Missile direction map.
-     */
-    protected static readonly DIRECTION_MAP: { [index: number]: string } = {
-        0: '-top',
-        90: '+left',
-        180: '+top',
-        270: '-left'
-    };
-
-    /**
      * Local properties.
      */
-    protected step: number;
-    protected axis: string;
     protected loopId: number = 0;
 
     /**
@@ -35,21 +23,7 @@ export default class Missile extends Component<MissilePropsModel, MissileStateMo
     public constructor(props: MissilePropsModel) {
         super(props);
 
-        const direction = Missile.DIRECTION_MAP[this.props.rotation].substr(0, 1);
-        const operator = parseInt(direction + 1);
-        this.step = operator * MISSILE_MOVE_STEP;
-        this.axis = Missile.DIRECTION_MAP[this.props.rotation].substr(1);
-        const positionFix = Math.round(TANK_WIDTH / 2) - Math.round(MISSILE_WIDTH / 2);
-        this.state = {
-            location: this.calculateNextCoordinates(
-                // half tank + offset to prevent collision with missile while firing and moving
-                (Math.round(TANK_WIDTH / 2) + 10) * operator,
-                {
-                    x: this.props.location.x + positionFix,
-                    y: this.props.location.y + positionFix
-                }
-            )
-        };
+        this.state = {location: this.props.location};
     }
 
     /**
@@ -85,42 +59,28 @@ export default class Missile extends Component<MissilePropsModel, MissileStateMo
      * Game loop tick.
      */
     protected tick(): void {
-        // calculate new coordinates and check if missile may move there
-        const newCoords = this.calculateNextCoordinates();
-        const objectIds = this.props.world.isIntersecting({
-                id: this.props.id,
-                location: {
-                    x: newCoords.x,
-                    y: newCoords.y
-                },
-                dimension: {
-                    width: MISSILE_WIDTH,
-                    height: MISSILE_HEIGHT
-                }
-            },
-            Collision.BLOCK_SHOT
-        );
+        // handle move
+        const move = MISSILE_MOVE_HANDLER({
+            id: this.props.id,
+            tankId: this.props.tankId,
+            rotation: this.props.rotation,
+            direction: this.props.direction,
+            axis: this.props.axis,
+            location: this.state.location,
+            dimension: {
+                width: MISSILE_WIDTH,
+                height: MISSILE_HEIGHT
+            }
+        }, this.props.world, this.props.direction, this.props.axis);
 
-        // handle missile fell if it hits other object or continue moving
-        if (objectIds.length > 0) {
-            this.props.handleFellMissile(this.props.id, this.props.tankId, objectIds);
+        // post move related actions
+        if (move.hitObjects.length > 0) {
+            this.props.handleFellMissile(this.props.id, this.props.tankId, move.hitObjects);
         } else {
-            this.setState({location: newCoords});
-            this.props.world.updateObject(this.props.id, this.state.location);
+            this.setState({
+                location: move.location
+            });
         }
-    }
-
-    /**
-     * Calculate missile next coordinates.
-     *
-     * @param step - how far missile will move
-     * @param location - initial position
-     */
-    protected calculateNextCoordinates(step: number = this.step, location: Point = this.state.location): Point {
-        return {
-            x: this.axis === 'left' ? (location.x + step) : location.x,
-            y: this.axis === 'top' ? (location.y + step) : location.y
-        };
     }
 
     /**

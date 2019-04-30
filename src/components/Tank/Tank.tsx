@@ -17,6 +17,7 @@ import Network from "../../game/classes/Network";
 import {NetworkPacket} from "../../game/enums/NetworkPacket";
 import {TANK_MOVE_HANDLER} from "../../game/handlers/TankMoveHandler";
 import ServerTankEventKeyboardPacket from "../../game/models/network/ServerTankEventKeyboardPacket";
+import {MISSILE_DIRECTION_MAP, MISSILE_NEXT_COORDINATES} from "../../game/handlers/MissileMoveHandler";
 
 /**
  * Class Tank - tank component.
@@ -135,12 +136,26 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
     protected fireMissile(): void {
         if ((this.lastMissile + MISSILE_THROTTLE_TIME) < new Date().getTime()) {
             this.lastMissile = new Date().getTime();
+
+            const axis = MISSILE_DIRECTION_MAP[this.state.rotation].substr(1);
+            const direction = parseInt(MISSILE_DIRECTION_MAP[this.state.rotation].substr(0, 1) + 1);
+            const positionFix = Math.round(TANK_WIDTH / 2) - Math.round(MISSILE_WIDTH / 2);
             this.props.handleFireMissile({
                 id: uuidv4(),
                 tankId: this.props.id,
-                location: this.state.location,
+                location: MISSILE_NEXT_COORDINATES(
+                    axis,
+                    // half tank + offset to prevent collision with missile while firing and moving
+                    (Math.round(TANK_WIDTH / 2) + 10) * direction,
+                    {
+                        x: this.state.location.x + positionFix,
+                        y: this.state.location.y + positionFix
+                    }
+                ),
                 dimension: {width: MISSILE_WIDTH, height: MISSILE_HEIGHT},
-                rotation: this.state.rotation
+                rotation: this.state.rotation,
+                direction: direction,
+                axis: axis,
             });
         }
     }
@@ -175,7 +190,7 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
             this.ai();
         }
 
-        // handle active key
+        // handle move
         const move = TANK_MOVE_HANDLER({
             id: this.props.id,
             location: this.state.location,
@@ -186,6 +201,8 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
                 height: TANK_HEIGHT
             }
         }, this.props.world, this.isStuck, this.activeKey);
+
+        // post move related actions
         this.setState({
             location: move.location,
             rotation: move.rotation

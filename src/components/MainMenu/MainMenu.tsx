@@ -53,14 +53,16 @@ export default class MainMenu extends Component<MainMenuPropsModel, MainMenuStat
      * @param e - keyboard event
      */
     protected handleKeyboard(e: KeyboardEvent): void {
-        if (MainMenu.AVAILABLE_KEYBOARD_CODES.indexOf(e.code) > -1) {
-            if (e.code === 'Enter') {
-                this.props.handleStartGame(this.state.selectedMode);
-            } else if (['ArrowUp', 'ArrowDown'].indexOf(e.code) > -1) {
-                this.setState({
-                    selectedMode: this.state.selectedMode === GameMode.SINGLE_PLAYER ?
-                        GameMode.ONLINE_MULTIPLAYER : GameMode.SINGLE_PLAYER
-                })
+        if (this.props.message === null) {
+            if (MainMenu.AVAILABLE_KEYBOARD_CODES.indexOf(e.code) > -1) {
+                if (e.code === 'Enter') {
+                    this.props.handleStartGame(this.state.selectedMode);
+                } else if (['ArrowUp', 'ArrowDown'].indexOf(e.code) > -1) {
+                    this.setState({
+                        selectedMode: this.state.selectedMode === GameMode.SINGLE_PLAYER ?
+                            GameMode.ONLINE_MULTIPLAYER : GameMode.SINGLE_PLAYER
+                    })
+                }
             }
         }
     }
@@ -71,11 +73,13 @@ export default class MainMenu extends Component<MainMenuPropsModel, MainMenuStat
      * @param e - touch event
      */
     protected handleTouch(e: TouchEvent): void {
-        if (e.target) {
-            const target = e.target as HTMLElement;
-            const mode: GameMode | null = target.getAttribute('data-mode') as GameMode;
-            if (!target.classList.contains('disabled') && mode !== null) {
-                this.props.handleStartGame(mode);
+        if (this.props.message === null) {
+            if (e.target) {
+                const target = e.target as HTMLElement;
+                const mode: GameMode | null = target.getAttribute('data-mode') as GameMode;
+                if (!target.classList.contains('disabled') && mode !== null) {
+                    this.props.handleStartGame(mode);
+                }
             }
         }
     }
@@ -86,6 +90,13 @@ export default class MainMenu extends Component<MainMenuPropsModel, MainMenuStat
     public render(): ReactNode {
         return (
             <div className="main-menu">
+                {
+                    this.props.message && (
+                        <div className="message">
+                            {this.props.message}
+                        </div>
+                    )
+                }
                 <ul>
                     <li data-mode={GameMode.SINGLE_PLAYER}
                         className={this.state.selectedMode === GameMode.SINGLE_PLAYER ? 'selected' : ''}>

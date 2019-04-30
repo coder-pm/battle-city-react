@@ -5,6 +5,7 @@ import GameStateModel from "./GameStateModel";
 import {GameMode} from "../../game/enums/GameMode";
 import MainMenu from "../MainMenu/MainMenu";
 import GamePropsModel from "./GamePropsModel";
+import {GameStopReason} from "../../game/enums/GameStopReason";
 
 /**
  * Class Game - game component.
@@ -20,6 +21,7 @@ export default class Game extends Component<GamePropsModel, GameStateModel> {
 
         this.state = {
             activeMode: null,
+            message: null
         };
         this.handleStartGame = this.handleStartGame.bind(this);
         this.handleStopGame = this.handleStopGame.bind(this);
@@ -38,11 +40,29 @@ export default class Game extends Component<GamePropsModel, GameStateModel> {
 
     /**
      * Stop game handler.
+     *
+     * @param reason - stop reason
      */
-    protected handleStopGame() {
+    protected handleStopGame(reason: GameStopReason) {
+        let message;
+        switch (reason) {
+            case GameStopReason.SERVER_FULL:
+                message = 'Server full';
+                break;
+            case GameStopReason.SERVER_OFFLINE:
+                message = 'Server offline';
+                break;
+            default:
+                message = null;
+
+        }
         this.setState({
-            activeMode: null
-        })
+            activeMode: null,
+            message: message
+        });
+        window.setTimeout(() => {
+            this.setState({message: null});
+        }, 2000);
     }
 
     /**
@@ -58,7 +78,7 @@ export default class Game extends Component<GamePropsModel, GameStateModel> {
                             mode={this.state.activeMode}
                             handleStopGame={this.handleStopGame}/>
                         :
-                        <MainMenu handleStartGame={this.handleStartGame}/>
+                        <MainMenu handleStartGame={this.handleStartGame} message={this.state.message}/>
                 }
             </div>
         );

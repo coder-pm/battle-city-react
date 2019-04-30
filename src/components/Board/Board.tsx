@@ -20,6 +20,9 @@ import {GameMode} from "../../game/enums/GameMode";
 import Network from "../../game/classes/Network";
 import {NetworkPacket} from "../../game/enums/NetworkPacket";
 import ObstacleModel from "../../game/models/components/ObstacleModel";
+import ServerHandshakingPacket from "../../game/models/network/ServerHandshakingPacket";
+import {GameStopReason} from "../../game/enums/GameStopReason";
+import {HandshakingStatus} from "../../game/enums/HandshakingStatus";
 
 /**
  * Class Board - board component.
@@ -124,7 +127,7 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
     protected handleKeyboard(e: KeyboardEvent): void {
         if (Board.AVAILABLE_KEYBOARD_CODES.indexOf(e.code) > -1) {
             if (e.code === 'Escape') {
-                this.props.handleStopGame();
+                this.props.handleStopGame(GameStopReason.KEY_ESC);
             }
         }
     }
@@ -135,14 +138,12 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
      * @param missile - missile definition
      */
     protected handleFireMissile(missile: MissileModel): void {
-        if (this.state.missiles.filter((m) => m.tankId === missile.tankId).length === 0) {
-            this.setState({
-                missiles: this.state.missiles.concat(missile),
-                sounds: this.state.sounds.concat({id: missile.id})
-            });
-            this.deferTimer(() => this.setState({
-                sounds: this.state.sounds.filter((sound) => sound.id !== missile.id)
-            }), 500);
+        if (this.props.mode === GameMode.ONLINE_MULTIPLAYER) {
+            Network.emit(NetworkPacket.TANK_EVENT_FIRE, missile);
+        } else {
+            if (this.state.missiles.filter((m) => m.tankId === missile.tankId).length === 0) {
+                this.fireMissile(missile);
+            }
         }
     }
 
@@ -154,68 +155,99 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
      * @param hitObjects - objects that were hit by missile
      */
     protected handleFellMissile(id: string, tankId: string, hitObjects: Array<Structure>): void {
-        const newState: any = {};
-        const ownerTank = this.state.tanks.filter((tank) => tank.id === tankId).shift();
-        if (ownerTank) {
-            // remove hit missiles
-            newState.missiles = this.state.missiles.filter(
-                (missile) => !(
-                    missile.id === id ||
-                    hitObjects.filter((o) => o.id === missile.id).length > 0
-                )
-            );
-            // remove hit destructible obstacles
-            newState.obstacles = this.state.obstacles.filter(
-                (obstacle) => !(
-                    hitObjects.filter((o) => o.id === obstacle.id).length > 0 &&
-                    // it should be not possible to destroy metal and transparent obstacles
-                    [ObstacleType.METAL, ObstacleType.TRANSPARENT].indexOf(obstacle.type) === -1
-                )
-            );
-            // remove hit tanks
-            newState.tanks = this.state.tanks.filter(
-                (tank) => {
-                    if (
-                        // this tank wasn't hit
-                        hitObjects.filter((o) => o.id === tank.id).length === 0 ||
-                        // ignore if ai hit ai
-                        (tank.actor === TankActor.AI && ownerTank.actor === TankActor.AI) ||
-                        // ignore if we hit self
-                        tank.id === ownerTank.id
-                    ) {
-                        return true;
+        if (this.props.mode === GameMode.SINGLE_PLAYER) {
+            const newState: any = {};
+            const ownerTank = this.state.tanks.filter((tank) => tank.id === tankId).shift();
+            if (ownerTank) {
+                // remove hit missiles
+                newState.missiles = this.state.missiles.filter(
+                    (missile) => !(
+                        missile.id === id ||
+                        hitObjects.filter((o) => o.id === missile.id).length > 0
+                    )
+                );
+                // remove hit destructible obstacles
+                newState.obstacles = this.state.obstacles.filter(
+                    (obstacle) => !(
+                        hitObjects.filter((o) => o.id === obstacle.id).length > 0 &&
+                        // it should be not possible to destroy metal and transparent obstacles
+                        [ObstacleType.METAL, ObstacleType.TRANSPARENT].indexOf(obstacle.type) === -1
+                    )
+                );
+                // remove hit tanks
+                newState.tanks = this.state.tanks.filter(
+                    (tank) => {
+                        if (
+                            // this tank wasn't hit
+                            hitObjects.filter((o) => o.id === tank.id).length === 0 ||
+                            // ignore if ai hit ai
+                            (tank.actor === TankActor.AI && ownerTank.actor === TankActor.AI) ||
+                            // ignore if we hit self
+                            tank.id === ownerTank.id
+                        ) {
+                            return true;
+                        }
+                        // set respawn tank timer
+                        this.deferTimer(() => this.spawnTank(tank), 2500);
+                        return false;
                     }
-                    // set respawn tank timer
-                    this.deferTimer(() => this.spawnTank(tank), 2500);
-                    return false;
-                }
-            );
-            this.setState(newState);
+                );
+                this.setState(newState);
+            }
         }
     }
 
     /**
      * Handle network on connected event.
      *
-     * @param clientId - client identifier obtained from server (tank id)
+     * @param packet - server handshaking packet
      */
-    protected handleNetworkOnConnected(clientId: string): void {
-        // receive obstacles
-        Network.listen(NetworkPacket.BOARD_STATE_OBSTACLES, (obstacles: Array<ObstacleModel>) => {
-            this.setState({obstacles: obstacles})
-        });
-        // receive tanks
-        Network.listen(NetworkPacket.BOARD_STATE_TANKS, (tanks: Array<TankModel>) => {
-            this.setState({
-                // mark our tank as actor self
-                tanks: tanks.map((tank) => {
-                    if (tank.id === clientId) {
-                        tank.actor = TankActor.SELF;
-                    }
-                    return tank;
+    protected handleNetworkOnConnected(packet: ServerHandshakingPacket): void {
+        if (packet.status === HandshakingStatus.FULL) {
+            this.props.handleStopGame(GameStopReason.SERVER_FULL);
+        } else if (packet.status === HandshakingStatus.OFFLINE) {
+            this.props.handleStopGame(GameStopReason.SERVER_OFFLINE);
+        } else {
+            // bind missiles change event
+            Network.listen(NetworkPacket.BOARD_STATE_MISSILES, (missiles: Array<MissileModel>) => {
+                this.setState({missiles: missiles});
+            });
+            // bind obstacle change event
+            Network.listen(NetworkPacket.BOARD_STATE_OBSTACLES, (obstacles: Array<ObstacleModel>) => {
+                this.setState({obstacles: obstacles});
+            });
+            // bind tanks change event
+            Network.listen(NetworkPacket.BOARD_STATE_TANKS, (tanks: Array<TankModel>) => {
+                this.setState({
+                    // mark our tank as actor self
+                    tanks: tanks.map((tank) => {
+                        if (tank.id === packet.clientId) {
+                            tank.actor = TankActor.SELF;
+                        }
+                        return tank;
+                    })
                 })
-            })
+            });
+            // bind missile fire event
+            Network.listen(NetworkPacket.TANK_EVENT_FIRE, (missile: MissileModel) => {
+                this.fireMissile(missile);
+            });
+        }
+    }
+
+    /**
+     * Fire missile.
+     *
+     * @param missile - missile definition
+     */
+    protected fireMissile(missile: MissileModel) {
+        this.setState({
+            missiles: this.state.missiles.concat(missile),
+            sounds: this.state.sounds.concat({id: missile.id})
         });
+        this.deferTimer(() => this.setState({
+            sounds: this.state.sounds.filter((sound) => sound.id !== missile.id)
+        }), 500);
     }
 
     /**
@@ -291,6 +323,8 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
                             tankId={missile.tankId}
                             location={missile.location}
                             rotation={missile.rotation}
+                            direction={missile.direction}
+                            axis={missile.axis}
                             world={this.props.world}
                             handleFellMissile={this.handleFellMissile}
                         />

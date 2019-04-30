@@ -3,7 +3,7 @@ import {Collision} from "../enums/Collision";
 import {TankActor} from "../enums/TankActor";
 import World from "../classes/World";
 import TankModel from "../models/components/TankModel";
-import Move from "../models/Move";
+import TankMove from "../models/move/TankMove";
 
 /**
  * Tank move handler.
@@ -13,16 +13,16 @@ import Move from "../models/Move";
  * @param isStuck - stuck state
  * @param activeKey - active key
  */
-export const TANK_MOVE_HANDLER = (tank: TankModel, world: World, isStuck: boolean, activeKey: string): Move => {
-    let move = {
+export const TANK_MOVE_HANDLER = (tank: TankModel, world: World, isStuck: boolean, activeKey: string): TankMove => {
+    let move: TankMove = {
         location: tank.location,
         rotation: tank.rotation,
         isStuck: isStuck
     };
     if (activeKey) {
-        let x = tank.location.x;
-        let y = tank.location.y;
-        let r = tank.rotation;
+        let x = move.location.x;
+        let y = move.location.y;
+        let r = move.rotation;
         let initialDirection = r;
         let correctionAxis = 'x';
         switch (activeKey) {
@@ -73,7 +73,7 @@ export const TANK_MOVE_HANDLER = (tank: TankModel, world: World, isStuck: boolea
             move.location = {x: x, y: y};
             move.rotation = r;
             move.isStuck = false;
-            world.updateObject(tank.id, tank.location);
+            world.updateObject(tank.id, move.location);
         } else {
             move.isStuck = true;
             // just rotate in case of intersection

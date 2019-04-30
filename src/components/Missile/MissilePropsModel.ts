@@ -10,6 +10,8 @@ export default interface MissilePropsModel {
     tankId: string;
     location: Point;
     rotation: number;
+    direction: number;
+    axis: string;
     world: World;
-    handleFellMissile: (id: string, tankId: string, objectIds: Array<Structure>) => void;
+    handleFellMissile: (id: string, tankId: string, hitObjects: Array<Structure>) => void;
 }
