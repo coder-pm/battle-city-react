@@ -11,4 +11,5 @@ export default interface BoardStateModel {
     obstacles: Array<ObstacleModel>;
     missiles: Array<MissileModel>;
     sounds: Array<Sound>;
+    latency: number
 }

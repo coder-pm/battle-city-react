@@ -12,6 +12,7 @@ export default class Network {
      * Properties.
      */
     protected static socket: SocketIOClient.Socket | null = null;
+    protected static latency: number = 0;
 
     /**
      * Connect to server.
@@ -31,6 +32,13 @@ export default class Network {
             // @ts-ignore
             this.socket.on(NetworkPacket.GAME_HANDSHAKING, (packet: ServerHandshakingPacket) => {
                 callback(packet);
+                if (packet.status === HandshakingStatus.SUCCESS) {
+                    // @ts-ignore
+                    this.socket.on(NetworkPacket.GAME_PING, (latency: number) => {
+                        this.latency = latency;
+                        this.emit(NetworkPacket.GAME_PONG, {});
+                    });
+                }
             });
         });
     }
@@ -72,5 +80,12 @@ export default class Network {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Returns connection latency.
+     */
+    public static getLatency(): number {
+        return this.latency;
     }
 }

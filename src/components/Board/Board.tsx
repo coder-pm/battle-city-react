@@ -87,12 +87,14 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
             ] : [],
             obstacles: this.props.mode === GameMode.SINGLE_PLAYER ? MAP_1 : [],
             missiles: [],
-            sounds: []
+            sounds: [],
+            latency: 0
         };
         this.handleKeyboard = this.handleKeyboard.bind(this);
         this.handleFireMissile = this.handleFireMissile.bind(this);
         this.handleFellMissile = this.handleFellMissile.bind(this);
         this.handleNetworkOnConnected = this.handleNetworkOnConnected.bind(this);
+        this.handleNetworkLatency = this.handleNetworkLatency.bind(this);
         this.spawnTank = this.spawnTank.bind(this);
     }
 
@@ -103,6 +105,8 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
         window.addEventListener('keydown', this.handleKeyboard);
         if (this.props.mode === GameMode.ONLINE_MULTIPLAYER) {
             Network.connect(this.handleNetworkOnConnected);
+            const latencyTimerId = window.setInterval(this.handleNetworkLatency, 1000);
+            this.timerIds[latencyTimerId] = latencyTimerId;
         }
     }
 
@@ -236,6 +240,13 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
     }
 
     /**
+     * Handle network latency update.
+     */
+    protected handleNetworkLatency() {
+        this.setState({latency: Network.getLatency()})
+    }
+
+    /**
      * Fire missile.
      *
      * @param missile - missile definition
@@ -335,6 +346,9 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
                         <audio key={sound.id} src={assetSoundShot} preload="auto" autoPlay={true}/>
                     ))
                 }
+                {this.props.mode === GameMode.ONLINE_MULTIPLAYER && (
+                    <div className="latency">{this.state.latency} ms</div>
+                )}
                 <audio src={assetSoundIntro} preload="auto" autoPlay={true}/>
             </div>
         );

@@ -1,4 +1,13 @@
 .board {
   position: relative;
   background: #000;
+
+  .latency {
+    position: absolute;
+    bottom: 0;
+    right: 24px;
+    z-index: 1000;
+    font-family: 'Bungee', cursive;
+    color: #ababab;
+  }
 }
