@@ -5,6 +5,7 @@ import MissilePropsModel from "./MissilePropsModel";
 import MissileStateModel from "./MissileStateModel";
 import {Collision} from "../../game/enums/Collision";
 import {MISSILE_MOVE_HANDLER} from "../../game/handlers/MissileMoveHandler";
+import MissileModel from "../../game/models/components/MissileModel";
 
 /**
  * Class Missile - missile component.
@@ -30,20 +31,7 @@ export default class Missile extends Component<MissilePropsModel, MissileStateMo
      * Method called once after creating component.
      */
     public componentDidMount(): void {
-        this.props.world.registerObject(
-            {
-                id: this.props.id,
-                location: {
-                    x: this.state.location.x,
-                    y: this.state.location.y
-                },
-                dimension: {
-                    width: MISSILE_WIDTH,
-                    height: MISSILE_HEIGHT
-                }
-            },
-            Collision.BLOCK_ALL
-        );
+        this.props.world.registerObject(this.modelSnapshot(), Collision.BLOCK_ALL);
         this.loopId = window.setInterval(() => this.tick(), GAME_FRAMERATE);
     }
 
@@ -56,11 +44,10 @@ export default class Missile extends Component<MissilePropsModel, MissileStateMo
     }
 
     /**
-     * Game loop tick.
+     * Returns model snapshot.
      */
-    protected tick(): void {
-        // handle move
-        const move = MISSILE_MOVE_HANDLER({
+    protected modelSnapshot(): MissileModel {
+        return {
             id: this.props.id,
             tankId: this.props.tankId,
             rotation: this.props.rotation,
@@ -71,15 +58,21 @@ export default class Missile extends Component<MissilePropsModel, MissileStateMo
                 width: MISSILE_WIDTH,
                 height: MISSILE_HEIGHT
             }
-        }, this.props.world, this.props.direction, this.props.axis);
+        };
+    }
+
+    /**
+     * Game loop tick.
+     */
+    protected tick(): void {
+        // handle move
+        const move = MISSILE_MOVE_HANDLER(this.modelSnapshot(), this.props.world, this.props.direction, this.props.axis);
 
         // post move related actions
         if (move.hitObjects.length > 0) {
             this.props.handleFellMissile(this.props.id, this.props.tankId, move.hitObjects);
         } else {
-            this.setState({
-                location: move.location
-            });
+            this.setState({location: move.location});
         }
     }
 

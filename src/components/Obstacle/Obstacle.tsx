@@ -4,7 +4,6 @@ import {OBSTACLE_HEIGHT, OBSTACLE_WIDTH} from '../../constants';
 import ObstaclePropsModel from "./ObstaclePropsModel";
 import Stateless from "../../game/models/Stateless";
 import {Collision} from "../../game/enums/Collision";
-import World from "../../game/classes/World";
 import {ObstacleType} from "../../game/enums/ObstacleType";
 
 /**
@@ -29,10 +28,7 @@ export default class Obstacle extends Component<ObstaclePropsModel, Stateless> {
         this.props.world.registerObject(
             {
                 id: this.props.id,
-                location: {
-                    x: this.props.location.x,
-                    y: this.props.location.y
-                },
+                location: this.props.location,
                 dimension: {
                     width: this.props.dimension ? this.props.dimension.width : OBSTACLE_WIDTH,
                     height: this.props.dimension ? this.props.dimension.height : OBSTACLE_HEIGHT

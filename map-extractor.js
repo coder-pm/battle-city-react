@@ -22,7 +22,12 @@ document.querySelectorAll('tr').forEach((row, i) => {
                             type = 'ObstacleType.BRICK';
                             break;
                     }
-                    obstacles.push(`{id: uuidv4(), type: ${type}, location: {x: ${24 + (j * 24)}, y: ${24 + (i * 24)}}, dimension: {width: OBSTACLE_WIDTH, height: OBSTACLE_HEIGHT}}`);
+                    obstacles.push('{' + [
+                        'id: uuidv4()',
+                        `type: ${type}`,
+                        `location: {x: ${24 + (j * 24)}, y: ${24 + (i * 24)}}`,
+                        'dimension: {width: OBSTACLE_WIDTH, height: OBSTACLE_HEIGHT}',
+                    ].join(',') + '}');
                 }
             }
         })
@@ -30,7 +35,8 @@ document.querySelectorAll('tr').forEach((row, i) => {
 });
 console.log(`import uuidv4 from 'uuid/v4';
 import {BOARD_HEIGHT, BOARD_WIDTH, OBSTACLE_HEIGHT, OBSTACLE_WIDTH} from "../../constants";
-import {ObstacleType} from "../../components/Obstacle/ObstacleType";
+import {StructureType} from "../enums/StructureType";
+import {ObstacleType} from "../enums/ObstacleType";
 import ObstacleModel from "../models/components/ObstacleModel";
 
 export const MAP_1: Array<ObstacleModel> = [

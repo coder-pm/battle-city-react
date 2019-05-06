@@ -1,4 +1,4 @@
-import {OBSTACLE_HEIGHT, OBSTACLE_WIDTH, TANK_HEIGHT, TANK_MOVE_STEP, TANK_WIDTH} from "../../constants";
+import {OBSTACLE_HEIGHT, OBSTACLE_WIDTH, TANK_MOVE_STEP} from "../../constants";
 import {Collision} from "../enums/Collision";
 import {TankActor} from "../enums/TankActor";
 import World from "../classes/World";
@@ -57,17 +57,8 @@ export const TANK_MOVE_HANDLER = (tank: TankModel, world: World, isStuck: boolea
         }
 
         // intersection check
-        if (world.isIntersecting({
-                id: tank.id,
-                location: {
-                    x: x,
-                    y: y
-                },
-                dimension: {
-                    width: TANK_WIDTH,
-                    height: TANK_HEIGHT
-                }
-            },
+        if (world.isIntersecting(
+            Object.assign({}, tank, {location: {x: x, y: y}}),
             Collision.BLOCK_MOVE
         ).length === 0) {
             move.location = {x: x, y: y};

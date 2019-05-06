@@ -1,5 +1,5 @@
 import MissileMove from "../models/move/MissileMove";
-import {MISSILE_HEIGHT, MISSILE_MOVE_STEP, MISSILE_WIDTH} from "../../constants";
+import {MISSILE_MOVE_STEP} from "../../constants";
 import {Collision} from "../enums/Collision";
 import MissileModel from "../models/components/MissileModel";
 import World from "../classes/World";
@@ -17,17 +17,8 @@ export const MISSILE_MOVE_HANDLER = (missile: MissileModel, world: World, direct
     // calculate new coordinates and check if missile may move there
     const step = direction * MISSILE_MOVE_STEP;
     const newCoords = MISSILE_NEXT_COORDINATES(axis, step, missile.location);
-    const hitObjects = world.isIntersecting({
-            id: missile.id,
-            location: {
-                x: newCoords.x,
-                y: newCoords.y
-            },
-            dimension: {
-                width: MISSILE_WIDTH,
-                height: MISSILE_HEIGHT
-            }
-        },
+    const hitObjects = world.isIntersecting(
+        Object.assign({}, missile, {location: newCoords}),
         Collision.BLOCK_SHOT
     );
 

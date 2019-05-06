@@ -18,6 +18,7 @@ import {NetworkPacket} from "../../game/enums/NetworkPacket";
 import {TANK_MOVE_HANDLER} from "../../game/handlers/TankMoveHandler";
 import ServerTankEventKeyboardPacket from "../../game/models/network/ServerTankEventKeyboardPacket";
 import {MISSILE_DIRECTION_MAP, MISSILE_NEXT_COORDINATES} from "../../game/handlers/MissileMoveHandler";
+import TankModel from "../../game/models/components/TankModel";
 
 /**
  * Class Tank - tank component.
@@ -62,20 +63,7 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
      * Method called once after creating component.
      */
     public componentDidMount(): void {
-        this.props.world.registerObject(
-            {
-                id: this.props.id,
-                location: {
-                    x: this.state.location.x,
-                    y: this.state.location.y
-                },
-                dimension: {
-                    width: TANK_WIDTH,
-                    height: TANK_HEIGHT
-                }
-            },
-            Collision.BLOCK_ALL
-        );
+        this.props.world.registerObject(this.modelSnapshot(), Collision.BLOCK_ALL);
         this.loopId = window.setInterval(() => this.tick(), GAME_FRAMERATE);
 
         // start "artificial intelligence"
@@ -155,7 +143,7 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
                 dimension: {width: MISSILE_WIDTH, height: MISSILE_HEIGHT},
                 rotation: this.state.rotation,
                 direction: direction,
-                axis: axis,
+                axis: axis
             });
         }
     }
@@ -182,6 +170,22 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
     }
 
     /**
+     * Returns model snapshot.
+     */
+    protected modelSnapshot(): TankModel {
+        return {
+            id: this.props.id,
+            location: this.state.location,
+            rotation: this.state.rotation,
+            actor: this.props.actor,
+            dimension: {
+                width: TANK_WIDTH,
+                height: TANK_HEIGHT
+            }
+        };
+    }
+
+    /**
      * Game loop tick.
      */
     protected tick(): void {
@@ -191,16 +195,7 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
         }
 
         // handle move
-        const move = TANK_MOVE_HANDLER({
-            id: this.props.id,
-            location: this.state.location,
-            rotation: this.state.rotation,
-            actor: this.props.actor,
-            dimension: {
-                width: TANK_WIDTH,
-                height: TANK_HEIGHT
-            }
-        }, this.props.world, this.isStuck, this.activeKey);
+        const move = TANK_MOVE_HANDLER(this.modelSnapshot(), this.props.world, this.isStuck, this.activeKey);
 
         // post move related actions
         this.setState({
