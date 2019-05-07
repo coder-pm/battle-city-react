@@ -16,7 +16,7 @@ import {TankActor} from "../../game/enums/TankActor";
 import Network from "../../game/classes/Network";
 import {NetworkPacket} from "../../game/enums/NetworkPacket";
 import {TANK_MOVE_HANDLER} from "../../game/handlers/TankMoveHandler";
-import ServerTankEventKeyboardPacket from "../../game/models/network/ServerTankEventKeyboardPacket";
+import TankEventKeyboardPacket from "../../game/models/network/TankEventKeyboardPacket";
 import {MISSILE_DIRECTION_MAP, MISSILE_NEXT_COORDINATES} from "../../game/handlers/MissileMoveHandler";
 import TankModel from "../../game/models/components/TankModel";
 
@@ -73,7 +73,7 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
         }
 
         // listen to keyboard event
-        Network.listen(NetworkPacket.TANK_EVENT_KEYBOARD, (packet: ServerTankEventKeyboardPacket) => {
+        Network.listen(NetworkPacket.TANK_EVENT_KEYBOARD, (packet: TankEventKeyboardPacket) => {
             if (this.props.id === packet.tankId) {
                 this.activeKey = packet.key;
                 this.setState({
@@ -109,11 +109,13 @@ export default class Tank extends Component<TankPropsModel, TankStateModel> {
             } else {
                 if (e.type === 'keydown') {
                     this.activeKey = e.code;
-                    Network.emit(NetworkPacket.TANK_EVENT_KEYBOARD, this.activeKey);
                 } else if (this.activeKey === e.code) {
                     this.activeKey = '';
-                    Network.emit(NetworkPacket.TANK_EVENT_KEYBOARD, '');
                 }
+                Network.emit(NetworkPacket.TANK_EVENT_KEYBOARD, {
+                    key: this.activeKey,
+                    location: this.state.location
+                });
             }
         }
     }

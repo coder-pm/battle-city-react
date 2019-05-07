@@ -20,7 +20,7 @@ import {GameMode} from "../../game/enums/GameMode";
 import Network from "../../game/classes/Network";
 import {NetworkPacket} from "../../game/enums/NetworkPacket";
 import ObstacleModel from "../../game/models/components/ObstacleModel";
-import ServerHandshakingPacket from "../../game/models/network/ServerHandshakingPacket";
+import HandshakingPacket from "../../game/models/network/HandshakingPacket";
 import {GameStopReason} from "../../game/enums/GameStopReason";
 import {HandshakingStatus} from "../../game/enums/HandshakingStatus";
 
@@ -206,7 +206,7 @@ export default class Board extends Component<BoardPropsModel, BoardStateModel> {
      *
      * @param packet - server handshaking packet
      */
-    protected handleNetworkOnConnected(packet: ServerHandshakingPacket): void {
+    protected handleNetworkOnConnected(packet: HandshakingPacket): void {
         if (packet.status === HandshakingStatus.FULL) {
             this.props.handleStopGame(GameStopReason.SERVER_FULL);
         } else if (packet.status === HandshakingStatus.OFFLINE) {

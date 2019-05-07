@@ -1,7 +1,7 @@
 import io from "socket.io-client";
 import {NetworkPacket} from "../../enums/NetworkPacket";
 import {GAME_SERVER_ADDRESS, GAME_SERVER_PORT} from "../../../constants";
-import ServerHandshakingPacket from "../../models/network/ServerHandshakingPacket";
+import HandshakingPacket from "../../models/network/HandshakingPacket";
 import {HandshakingStatus} from "../../enums/HandshakingStatus";
 
 /**
@@ -30,7 +30,7 @@ export default class Network {
         });
         this.socket.on(NetworkPacket.CONNECT, () => {
             // @ts-ignore
-            this.socket.on(NetworkPacket.GAME_HANDSHAKING, (packet: ServerHandshakingPacket) => {
+            this.socket.on(NetworkPacket.GAME_HANDSHAKING, (packet: HandshakingPacket) => {
                 callback(packet);
                 if (packet.status === HandshakingStatus.SUCCESS) {
                     // @ts-ignore

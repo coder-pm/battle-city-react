@@ -1,9 +1,9 @@
 import {HandshakingStatus} from "../../enums/HandshakingStatus";
 
 /**
- * Interface ServerHandshakingPacket - server handshaking packet.
+ * Interface HandshakingPacket - handshaking packet.
  */
-export default interface ServerHandshakingPacket {
+export default interface HandshakingPacket {
     clientId: string | null;
     status: HandshakingStatus
 }
