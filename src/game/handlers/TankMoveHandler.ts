@@ -20,49 +20,15 @@ export const TANK_MOVE_HANDLER = (tank: TankModel, world: World, isStuck: boolea
         isStuck: isStuck
     };
     if (activeKey) {
-        let x = move.location.x;
-        let y = move.location.y;
-        let r = move.rotation;
-        let initialDirection = r;
-        let correctionAxis = 'x';
-        switch (activeKey) {
-            case 'ArrowUp':
-                y -= TANK_MOVE_STEP;
-                r = 0;
-                break;
-            case 'ArrowRight':
-                x += TANK_MOVE_STEP;
-                r = 90;
-                correctionAxis = 'y';
-                break;
-            case 'ArrowDown':
-                y += TANK_MOVE_STEP;
-                r = 180;
-                break;
-            case 'ArrowLeft':
-                x -= TANK_MOVE_STEP;
-                r = 270;
-                correctionAxis = 'y';
-                break;
-            default:
-        }
-
-        // move correction (stick to grid)
-        if (initialDirection !== r) {
-            if (correctionAxis === 'x') {
-                x = 3 + (Math.round(x / OBSTACLE_WIDTH) * OBSTACLE_WIDTH);
-            } else {
-                y = 3 + (Math.round(y / OBSTACLE_HEIGHT) * OBSTACLE_HEIGHT);
-            }
-        }
+        // perform step
+        const predict = TANK_STEP_HANDLER(move, activeKey);
 
         // intersection check
         if (world.isIntersecting(
-            Object.assign({}, tank, {location: {x: x, y: y}}),
+            Object.assign({}, tank, {location: predict.location}),
             Collision.BLOCK_MOVE
         ).length === 0) {
-            move.location = {x: x, y: y};
-            move.rotation = r;
+            move = predict;
             move.isStuck = false;
             world.updateObject(tank.id, move.location);
         } else {
@@ -70,9 +36,54 @@ export const TANK_MOVE_HANDLER = (tank: TankModel, world: World, isStuck: boolea
             // just rotate in case of intersection
             // but prevent rotation of stucked AI as it looks like glitch
             if (tank.actor !== TankActor.AI || !move.isStuck) {
-                move.rotation = r;
+                move.rotation = predict.rotation;
             }
         }
     }
     return move;
+};
+
+/**
+ * Tank step handler.
+ *
+ * @param move - tank move
+ * @param activeKey - active key
+ * @param step - step to perform
+ */
+export const TANK_STEP_HANDLER = (move: TankMove, activeKey: string, step: number = TANK_MOVE_STEP) => {
+    let x = move.location.x;
+    let y = move.location.y;
+    let r = move.rotation;
+    let initialDirection = r;
+    let correctionAxis = 'x';
+    switch (activeKey) {
+        case 'ArrowUp':
+            y -= step;
+            r = 0;
+            break;
+        case 'ArrowRight':
+            x += step;
+            r = 90;
+            correctionAxis = 'y';
+            break;
+        case 'ArrowDown':
+            y += step;
+            r = 180;
+            break;
+        case 'ArrowLeft':
+            x -= step;
+            r = 270;
+            correctionAxis = 'y';
+            break;
+        default:
+    }
+    // move correction (stick to grid)
+    if (initialDirection !== r) {
+        if (correctionAxis === 'x') {
+            x = 3 + (Math.round(x / OBSTACLE_WIDTH) * OBSTACLE_WIDTH);
+        } else {
+            y = 3 + (Math.round(y / OBSTACLE_HEIGHT) * OBSTACLE_HEIGHT);
+        }
+    }
+    return Object.assign({}, move, {location: {x: x, y: y}, rotation: r});
 };
